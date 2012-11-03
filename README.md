@@ -10,6 +10,30 @@ Features
 * Sprites
 * Menus
 
+Getting started
+---------------
+Download the lastest version of [kogame.js](https://github.com/kobingo/kogame.js/blob/master/kogame.js) 
+then write the following code in a html file.
+
+    <!DOCTYPE html>
+    <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8" />
+        <title>KoGame.js</title>
+    </head>
+    <body>
+        <canvas id="game" width="768" height="432"></canvas>
+        <script type="text/javascript" src="js/kogame.js"></script>
+        <script type="text/javascript">
+            var canvas = document.getElementById('game');
+            ko.game.init(canvas);
+            ko.game.run();
+        </script>
+    </body>
+    </html>
+
+Open the html file with your browser. If everything works correctly there should be a blue rectangle on the screen.
+
 Examples
 --------
 * Draw a sprite
