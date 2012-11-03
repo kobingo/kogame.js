@@ -19,7 +19,7 @@ then write the following code in a html file.
     <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
-        <title>KoGame.js</title>
+        <title>kogame.js</title>
     </head>
     <body>
         <canvas id="game" width="768" height="432"></canvas>
