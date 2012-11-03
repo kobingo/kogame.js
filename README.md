@@ -8,7 +8,7 @@ Features
 * Actions
 * Input
 * Sprites
-* Menues
+* Menus
 
 Examples
 --------
