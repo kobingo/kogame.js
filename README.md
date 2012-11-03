@@ -32,7 +32,7 @@ then write the following code in a html file.
     </body>
     </html>
 
-Open the html file in your browser. If everything works correctly there should be a blue rectangle on the screen.
+Open the html file in your browser, if everything works correctly there should be a blue rectangle on the screen.
 
 Examples
 --------
