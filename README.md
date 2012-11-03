@@ -1,4 +1,4 @@
-kogame.js
+KoGame.js
 =========
 
 A JavaScript Game Framework
