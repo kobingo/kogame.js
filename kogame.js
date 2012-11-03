@@ -1,4 +1,4 @@
-/*! KoGame.js - v0.1.0 - 2012-11-03
+/*! kogame.js - v0.1.0 - 2012-11-03
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
