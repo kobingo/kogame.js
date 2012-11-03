@@ -12,7 +12,7 @@ Features
 
 Getting started
 ---------------
-Download the lastest version of [kogame.js](https://github.com/kobingo/kogame.js/blob/master/kogame.js) 
+Download the latest version of [kogame.js](https://github.com/kobingo/kogame.js/blob/master/kogame.js) 
 then write the following code in a html file.
 
     <!DOCTYPE html>
