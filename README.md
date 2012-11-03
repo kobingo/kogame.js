@@ -14,5 +14,6 @@ Featues
 * Sprites
 * Menues
 
-Example
--------
+Examples
+--------
+* Draw a sprite
