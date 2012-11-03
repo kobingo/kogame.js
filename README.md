@@ -1,4 +1,4 @@
-KoGame.js
+kogame.js
 =========
 A high-level framework for creating games with HTML5 and JavaScript.
 
