@@ -16,18 +16,18 @@ Download the latest version of [kogame.js](https://github.com/kobingo/kogame.js/
 then write the following code in a html file.
 
     <!DOCTYPE html>
+
     <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
         <title>kogame.js</title>
     </head>
-    <body>
+    <body style="margin: 0px">
         <canvas id="game" width="768" height="432"></canvas>
         <script type="text/javascript" src="kogame.js"></script>
         <script type="text/javascript">
-            var canvas = document.getElementById('game');
-            ko.game.init(canvas);
-            ko.game.run();
+            ko.game.init('game');
+    		ko.game.run();
         </script>
     </body>
     </html>
