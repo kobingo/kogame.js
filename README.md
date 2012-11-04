@@ -12,7 +12,7 @@ Features
 
 Getting started
 ---------------
-Download the latest version of [kogame.js](https://github.com/kobingo/kogame.js/blob/master/kogame.js) 
+Download the latest version of [kogame.js](https://raw.github.com/kobingo/kogame.js/master/kogame-0.1.0.js) 
 then write the following code in a html file.
 
     <!DOCTYPE html>
@@ -23,7 +23,7 @@ then write the following code in a html file.
     </head>
     <body style="margin: 0px">
         <canvas id="game" width="768" height="432"></canvas>
-        <script type="text/javascript" src="kogame.js"></script>
+        <script type="text/javascript" src="kogame-0.1.0.js"></script>
         <script type="text/javascript">
             ko.game.init('game');
     		ko.game.run();
