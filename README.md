@@ -16,7 +16,6 @@ Download the latest version of [kogame.js](https://github.com/kobingo/kogame.js/
 then write the following code in a html file.
 
     <!DOCTYPE html>
-
     <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
