@@ -21,13 +21,12 @@ then write the following code in a html file.
         <meta charset="utf-8" />
         <title>kogame.js</title>
     </head>
-    <body>
+    <body style="margin: 0px">
         <canvas id="game" width="768" height="432"></canvas>
         <script type="text/javascript" src="kogame.js"></script>
         <script type="text/javascript">
-            var canvas = document.getElementById('game');
-            ko.game.init(canvas);
-            ko.game.run();
+            ko.game.init('game');
+    		ko.game.run();
         </script>
     </body>
     </html>
