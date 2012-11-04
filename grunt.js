@@ -34,13 +34,13 @@ module.exports = function(grunt) {
           'src/scene.js', 
           'src/menu.js'
         ],
-        dest: '<%= pkg.name %>.js'
+        dest: '<%= pkg.name %>-<%= pkg.version %>.js'
       }
     },
     min: {
       dist: {
         src: ['<banner:meta.banner>', '<config:concat.dist.dest>'],
-        dest: '<%= pkg.name %>.min.js'
+        dest: '<%= pkg.name %>-<%= pkg.version %>.min.js'
       }
     },
     watch: {

@@ -1,4 +1,4 @@
-/*! kogame.js - v0.1.0 - 2012-11-03
+/*! kogame.js - v0.1.0 - 2012-11-04
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -12,9 +12,14 @@ var ko = (function (ko) {
         window.msRequestAnimationFrame;
     var Game = function () {
     };
-    Game.prototype.init = function (canvas) {
+    Game.prototype.init = function (canvasId) {
+        if (!canvasId) {
+            throw new Error("Can't init game without canvasId.");
+        }
+        /*global document*/
+        var canvas = document.getElementById(canvasId);
         if (!canvas) {
-            throw new Error("Can't init game without a canvas.");
+            throw new Error("Couldn't find canvas with id '" + canvasId + "'.");
         }
         ko.renderer = new ko.Renderer(canvas);
         this.initialized = true;
