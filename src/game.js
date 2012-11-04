@@ -9,13 +9,10 @@ var ko = (function (ko) {
     var Game = function () {
     };
     Game.prototype.init = function (canvasId) {
-        if (!canvasId) {
-            throw new Error("Can't init game without canvasId.");
-        }
         /*global document*/
         var canvas = document.getElementById(canvasId);
         if (!canvas) {
-            throw new Error("Couldn't find canvas with id '" + canvasId + "'.");
+            throw new Error("Couldn't find canvas '" + canvasId + "'");
         }
         ko.renderer = new ko.Renderer(canvas);
         this.initialized = true;

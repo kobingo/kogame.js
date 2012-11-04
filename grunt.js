@@ -14,8 +14,8 @@ module.exports = function(grunt) {
     lint: {
       files: ['grunt.js', 'src/**/*.js', 'test/**/*.js']
     },
-    test: {
-      files: ['test/**/*.js']
+    qunit: {
+      files: ['test/**/*.html']
     },
     concat: {
       dist: {
@@ -45,7 +45,7 @@ module.exports = function(grunt) {
     },
     watch: {
       files: '<config:lint.files>',
-      tasks: 'lint test'
+      tasks: 'lint qunit'
     },
     jshint: {
       options: {
@@ -66,6 +66,6 @@ module.exports = function(grunt) {
   });
 
   // Default task.
-  grunt.registerTask('default', 'lint test concat min');
+  grunt.registerTask('default', 'lint concat qunit min');
 
 };
