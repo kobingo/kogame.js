@@ -21,7 +21,7 @@ then write the following code in a html file.
         <meta charset="utf-8" />
         <title>kogame.js</title>
     </head>
-    <body style="margin: 0px">
+    <body>
         <canvas id="game" width="768" height="432"></canvas>
         <script type="text/javascript" src="kogame-0.1.0.js"></script>
         <script type="text/javascript">
