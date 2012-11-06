@@ -1,44 +1,43 @@
-/*! kogame.js - v0.1.0 - 2012-11-04
+/*! kogame.js - v0.1.0 - 2012-11-06
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
 var ko = (function (ko) {
     /*global window*/
-    var animationFrame =
+    var _animationFrame =
         window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
         window.mozRequestAnimationFrame ||
         window.oRequestAnimationFrame ||
         window.msRequestAnimationFrame;
+    var _animate = function () {
+        ko.game.update(0.016);
+        _animationFrame(_animate);
+    };
     var Game = function () {
     };
     Game.prototype.init = function (canvasId) {
-        if (!canvasId) {
-            throw new Error("Can't init game without canvasId.");
-        }
         /*global document*/
         var canvas = document.getElementById(canvasId);
         if (!canvas) {
-            throw new Error("Couldn't find canvas with id '" + canvasId + "'.");
+            throw new Error("Couldn't find canvas '" + canvasId + "'");
         }
         ko.renderer = new ko.Renderer(canvas);
         this.initialized = true;
     };
     Game.prototype.run = function (scene) {
         if (!this.initialized) {
-            throw new Error("Game has not been initialized.");
+            throw new Error("Game has not been initialized");
         }
         ko.director.scene = scene;
-        animationFrame(this.tick);
+        _animationFrame(_animate);
     };
-    Game.prototype.tick = function () {
-        var delta = 0.016;
+    Game.prototype.update = function (delta) {
         ko.director.update(delta);
         ko.renderer.clear();
         ko.director.render();
         ko.keyboard.update();
         ko.mouse.update();
-        animationFrame(ko.game.tick);
     };
     ko.game = new Game();
     return ko;
@@ -86,6 +85,8 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
+    var isButtonDown;
+    var wasButtonPressed;
     var Mouse = function () {
         var self = this;
         this.position = { x: 0, y: 0 };
@@ -102,21 +103,25 @@ var ko = (function (ko) {
             self.position.y = event.offsetY;
         }, false);
         window.addEventListener('mousedown', function (event) {
-            //mouseState.curr.isButtonDown = true;
+            if (!isButtonDown) {
+                wasButtonPressed = true;
+            }
+            isButtonDown = true;
         }, false);
         window.addEventListener('mouseup', function (event) {
-            //mouseState.curr.isButtonDown = false;
+            isButtonDown = false;
         }, false);
     };
     Mouse.prototype.update = function () {
         this.moved.x = 0;
         this.moved.y = 0;
+        wasButtonPressed = false;
     };
     Mouse.prototype.isButtonDown = function () {
-        return false;
+        return isButtonDown;
     };
     Mouse.prototype.wasButtonPressed = function () {
-        return false;
+        return wasButtonPressed;
     };
     ko.mouse = new Mouse();
     return ko;

@@ -1,4 +1,6 @@
 var ko = (function (ko) {
+    var isButtonDown;
+    var wasButtonPressed;
     var Mouse = function () {
         var self = this;
         this.position = { x: 0, y: 0 };
@@ -15,21 +17,25 @@ var ko = (function (ko) {
             self.position.y = event.offsetY;
         }, false);
         window.addEventListener('mousedown', function (event) {
-            //mouseState.curr.isButtonDown = true;
+            if (!isButtonDown) {
+                wasButtonPressed = true;
+            }
+            isButtonDown = true;
         }, false);
         window.addEventListener('mouseup', function (event) {
-            //mouseState.curr.isButtonDown = false;
+            isButtonDown = false;
         }, false);
     };
     Mouse.prototype.update = function () {
         this.moved.x = 0;
         this.moved.y = 0;
+        wasButtonPressed = false;
     };
     Mouse.prototype.isButtonDown = function () {
-        return false;
+        return isButtonDown;
     };
     Mouse.prototype.wasButtonPressed = function () {
-        return false;
+        return wasButtonPressed;
     };
     ko.mouse = new Mouse();
     return ko;
