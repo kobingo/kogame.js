@@ -14,9 +14,6 @@ module.exports = function(grunt) {
     lint: {
       files: ['grunt.js', 'src/**/*.js', 'test/**/*.js']
     },
-    qunit: {
-      files: ['test/**/*.html']
-    },
     concat: {
       dist: {
         src: [
@@ -37,6 +34,9 @@ module.exports = function(grunt) {
         dest: '<%= pkg.name %>-<%= pkg.version %>.js'
       }
     },
+    qunit: {
+      files: ['test/**/*.html']
+    },
     min: {
       dist: {
         src: ['<banner:meta.banner>', '<config:concat.dist.dest>'],
@@ -45,7 +45,7 @@ module.exports = function(grunt) {
     },
     watch: {
       files: '<config:lint.files>',
-      tasks: 'lint qunit'
+      tasks: 'lint concat qunit'
     },
     jshint: {
       options: {

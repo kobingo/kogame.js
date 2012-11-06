@@ -1,11 +1,15 @@
 var ko = (function (ko) {
     /*global window*/
-    var animationFrame =
+    var _animationFrame =
         window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
         window.mozRequestAnimationFrame ||
         window.oRequestAnimationFrame ||
         window.msRequestAnimationFrame;
+    var _animate = function () {
+        ko.game.update(0.016);
+        _animationFrame(_animate);
+    };
     var Game = function () {
     };
     Game.prototype.init = function (canvasId) {
@@ -19,19 +23,17 @@ var ko = (function (ko) {
     };
     Game.prototype.run = function (scene) {
         if (!this.initialized) {
-            throw new Error("Game has not been initialized.");
+            throw new Error("Game has not been initialized");
         }
         ko.director.scene = scene;
-        animationFrame(this.tick);
+        _animationFrame(_animate);
     };
-    Game.prototype.tick = function () {
-        var delta = 0.016;
+    Game.prototype.update = function (delta) {
         ko.director.update(delta);
         ko.renderer.clear();
         ko.director.render();
         ko.keyboard.update();
         ko.mouse.update();
-        animationFrame(ko.game.tick);
     };
     ko.game = new Game();
     return ko;
