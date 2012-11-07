@@ -7,14 +7,11 @@
 </head>
 <body style="margin: 0px">
     <canvas id="game" width="768" height="432"></canvas>
-    <script type="text/javascript" src="script/kogame-0.1.0.js"></script>
+    <script type="text/javascript" src="script/kogame-0.3.0.js"></script>
     <script type="text/javascript">
 		ko.game.init('game');
 
-		var image = new Image();
-		image.src = 'img/gem.png';
-
-		var sprite = new ko.Sprite(image);
+		var sprite = new ko.Sprite('img/gem.png');
 		sprite.position = { x: ko.renderer.size.width / 2, y: ko.renderer.size.height / 2 };
 		sprite.scale = 0.5;
 
