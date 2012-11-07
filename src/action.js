@@ -11,6 +11,13 @@ var ko = (function (ko) {
         this.elapsed = 0;
     };
     ko.Action.prototype.update = function (delta) {
+        if (!this.duration) {
+            // When the duration is zero we just want to perform the action
+            // with a value of one
+            this.value = 1;
+            this.perform();
+            return;
+        }
         this.elapsed += delta;
         if (this.elapsed > this.duration) {
             this.elapsed = this.duration;

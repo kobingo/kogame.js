@@ -4,6 +4,7 @@ var ko = (function (ko) {
         this.context = canvas.getContext('2d');
         this.clearColor = 'rgb(100, 149, 237)';
         this.size = { width: canvas.width, height: canvas.height };
+        this.center = { x: canvas.width / 2, y: canvas.height / 2};
     };
     ko.Renderer.prototype.clear = function () {
         this.context.globalAlpha = 1;

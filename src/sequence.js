@@ -3,6 +3,7 @@ var ko = (function (ko) {
         this._actions = actions;
         this.repeatCount = repeatCount;
     };
+    ko.Sequence.prototype = Object.create(ko.Action.prototype);
     ko.Sequence.prototype.init = function (target) {
         this.actionIndex = 0;
         this.loopCount = 0;
@@ -14,11 +15,14 @@ var ko = (function (ko) {
             return;
         }
         var currentAction = this._actions[this.actionIndex];
-        if (currentAction.isComplete()) {
-            this.nextAction();
-        }
-        currentAction = this._actions[this.actionIndex];
         currentAction.update(delta);
+        while (currentAction.isComplete()) {
+            this.nextAction();
+            currentAction = this._actions[this.actionIndex];
+            if (!currentAction.duration) {
+                currentAction.update(delta);
+            }
+        }
     };
     ko.Sequence.prototype.isComplete = function () {
         if (!this.repeatCount) {

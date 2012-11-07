@@ -1,4 +1,4 @@
-/*! kogame.js - v0.1.0 - 2012-11-06
+/*! kogame.js - v0.1.0 - 2012-11-07
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -133,6 +133,7 @@ var ko = (function (ko) {
         this.context = canvas.getContext('2d');
         this.clearColor = 'rgb(100, 149, 237)';
         this.size = { width: canvas.width, height: canvas.height };
+        this.center = { x: canvas.width / 2, y: canvas.height / 2};
     };
     ko.Renderer.prototype.clear = function () {
         this.context.globalAlpha = 1;
@@ -227,10 +228,10 @@ var ko = (function (ko) {
     };
     ko.Node.prototype.addChild = function (child) {
         if (child === this) {
-            throw new Error("Can't add a child to itself.");
+            throw new Error("Can't add a child to itself");
         }
         if (child.parent) {
-            throw new Error("Child already has a parent.");
+            throw new Error("Child already has a parent");
         }
         this._children.push(child);
         child.parent = this;
@@ -261,14 +262,18 @@ var ko = (function (ko) {
 var ko = (function (ko) {
     ko.Label = function (text, font) {
         ko.Node.call(this);
-        this.setText(text, font);
+        this.setText(text);
+        this.setFont(font);
         this._render = function () {
             ko.renderer.drawLabel(this);
         };
     };
     ko.Label.prototype = Object.create(ko.Node.prototype);
-    ko.Label.prototype.setText = function (text, font) {
+    ko.Label.prototype.setText = function (text) {
         this.text = text;
+        this.size = ko.renderer.getLabelSize(this);
+    };
+    ko.Label.prototype.setFont = function (font) {
         this.font = font;
         this.size = ko.renderer.getLabelSize(this);
     };
@@ -288,6 +293,13 @@ var ko = (function (ko) {
         this.elapsed = 0;
     };
     ko.Action.prototype.update = function (delta) {
+        if (!this.duration) {
+            // When the duration is zero we just want to perform the action
+            // with a value of one
+            this.value = 1;
+            this.perform();
+            return;
+        }
         this.elapsed += delta;
         if (this.elapsed > this.duration) {
             this.elapsed = this.duration;
@@ -396,6 +408,7 @@ var ko = (function (ko) {
         this._actions = actions;
         this.repeatCount = repeatCount;
     };
+    ko.Sequence.prototype = Object.create(ko.Action.prototype);
     ko.Sequence.prototype.init = function (target) {
         this.actionIndex = 0;
         this.loopCount = 0;
@@ -407,11 +420,14 @@ var ko = (function (ko) {
             return;
         }
         var currentAction = this._actions[this.actionIndex];
-        if (currentAction.isComplete()) {
-            this.nextAction();
-        }
-        currentAction = this._actions[this.actionIndex];
         currentAction.update(delta);
+        while (currentAction.isComplete()) {
+            this.nextAction();
+            currentAction = this._actions[this.actionIndex];
+            if (!currentAction.duration) {
+                currentAction.update(delta);
+            }
+        }
     };
     ko.Sequence.prototype.isComplete = function () {
         if (!this.repeatCount) {
@@ -518,6 +534,13 @@ var ko = (function (ko) {
     ko.Menu.prototype = Object.create(ko.Node.prototype);
     ko.Menu.prototype.update = function (delta) {
         ko.Node.prototype.update.call(this, delta);
+        this.handleInput();
+        for (var i = 0; i < this._labels.length; i++) {
+            this._labels[i].color = i === this.selectedItemIndex ? 
+                this.selectedItemColor : this.itemColor;
+        }
+    };
+    ko.Menu.prototype.handleInput = function () {
         if (ko.keyboard.wasKeyHeld(ko.keyboard.UP)) {
             this.prevItem();
         } 
@@ -526,10 +549,6 @@ var ko = (function (ko) {
         }
         if (ko.keyboard.wasKeyPressed(ko.keyboard.ENTER)) {
             this.selectItem();
-        }
-        for (var i = 0; i < this._labels.length; i++) {
-            this._labels[i].color = i === this.selectedItemIndex ? 
-                this.selectedItemColor : this.itemColor;
         }
     };
     ko.Menu.prototype.createLabels = function () {

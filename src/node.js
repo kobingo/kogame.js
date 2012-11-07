@@ -52,10 +52,10 @@ var ko = (function (ko) {
     };
     ko.Node.prototype.addChild = function (child) {
         if (child === this) {
-            throw new Error("Can't add a child to itself.");
+            throw new Error("Can't add a child to itself");
         }
         if (child.parent) {
-            throw new Error("Child already has a parent.");
+            throw new Error("Child already has a parent");
         }
         this._children.push(child);
         child.parent = this;
