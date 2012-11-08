@@ -11,6 +11,9 @@ var ko = (function (ko) {
         this.elapsed = 0;
     };
     ko.Action.prototype.update = function (delta) {
+        if (!this.target) {
+            throw new Error("Action has not been initialized with a target");
+        }
         if (!this.duration) {
             // When the duration is zero we just want to perform the action
             // with a value of one
@@ -36,9 +39,9 @@ var ko = (function (ko) {
         return this.elapsed >= this.duration;
     };
 
-    ko.MoveTo = function (moveTo, duration, ease) {
+    ko.MoveTo = function (x, y, duration, ease) {
         ko.Action.call(this, duration, ease);
-        this.moveTo = moveTo;
+        this.moveTo = { x: x, y: y };
     };
     ko.MoveTo.prototype = Object.create(ko.Action.prototype);
     ko.MoveTo.prototype.init = function (target) {

@@ -60,5 +60,26 @@ var ko = (function (ko) {
         this._children.push(child);
         child.parent = this;
     };
+    ko.Node.prototype.moveTo = function (x, y, duration, ease) {
+        this.perform(new ko.MoveTo(x, y, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.scaleTo = function (scaleTo, duration, ease) {
+        this.perform(new ko.ScaleTo(scaleTo, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.rotateTo = function (rotateTo, duration, ease) {
+        this.perform(new ko.RotateTo(rotateTo, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.fadeTo = function (fadeTo, duration, ease) {
+        this.perform(new ko.FadeTo(fadeTo, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.sequence = function (repeat) {
+        var sequence = new ko.Sequence([], repeat);
+        this._actions.push(sequence);
+        return sequence;
+    };
     return ko;
 })(ko || {});
