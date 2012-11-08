@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.3.0 - 2012-11-07
+/*! Kogame.js - v0.3.0 - 2012-11-08
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -236,6 +236,27 @@ var ko = (function (ko) {
         this._children.push(child);
         child.parent = this;
     };
+    ko.Node.prototype.moveTo = function (x, y, duration, ease) {
+        this.perform(new ko.MoveTo(x, y, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.scaleTo = function (scaleTo, duration, ease) {
+        this.perform(new ko.ScaleTo(scaleTo, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.rotateTo = function (rotateTo, duration, ease) {
+        this.perform(new ko.RotateTo(rotateTo, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.fadeTo = function (fadeTo, duration, ease) {
+        this.perform(new ko.FadeTo(fadeTo, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.sequence = function (repeat) {
+        var sequence = new ko.Sequence([], repeat);
+        this._actions.push(sequence);
+        return sequence;
+    };
     return ko;
 })(ko || {});
 
@@ -299,6 +320,9 @@ var ko = (function (ko) {
         this.elapsed = 0;
     };
     ko.Action.prototype.update = function (delta) {
+        if (!this.target) {
+            throw new Error("Action has not been initialized with a target");
+        }
         if (!this.duration) {
             // When the duration is zero we just want to perform the action
             // with a value of one
@@ -324,9 +348,9 @@ var ko = (function (ko) {
         return this.elapsed >= this.duration;
     };
 
-    ko.MoveTo = function (moveTo, duration, ease) {
+    ko.MoveTo = function (x, y, duration, ease) {
         ko.Action.call(this, duration, ease);
-        this.moveTo = moveTo;
+        this.moveTo = { x: x, y: y };
     };
     ko.MoveTo.prototype = Object.create(ko.Action.prototype);
     ko.MoveTo.prototype.init = function (target) {
@@ -413,15 +437,22 @@ var ko = (function (ko) {
     ko.Sequence = function (actions, repeatCount) {
         this._actions = actions;
         this.repeatCount = repeatCount;
+        this.actionIndex = 0;
+        this.loopCount = 0;
     };
     ko.Sequence.prototype = Object.create(ko.Action.prototype);
     ko.Sequence.prototype.init = function (target) {
         this.actionIndex = 0;
         this.loopCount = 0;
-        this._actions[0].init(target);
+        if (this._actions.length > 0) {
+            this._actions[0].init(target);
+        }
         this.target = target;
     };
     ko.Sequence.prototype.update = function (delta) {
+        if (this._actions.length === 0) {
+            return;
+        }
         if (this.loopCount >= this.repeatCount) {
             return;
         }
@@ -448,6 +479,26 @@ var ko = (function (ko) {
             this.loopCount++;
         }
         this._actions[this.actionIndex].init(this.target);
+    };
+    ko.Sequence.prototype.moveTo = function (x, y, duration, ease) {
+        this._actions.push(new ko.MoveTo(x, y, duration, ease));
+        return this;
+    };
+    ko.Sequence.prototype.scaleTo = function (scaleTo, duration, ease) {
+        this._actions.push(new ko.ScaleTo(scaleTo, duration, ease));
+        return this;
+    };
+    ko.Sequence.prototype.rotateTo = function (rotateTo, duration, ease) {
+        this._actions.push(new ko.RotateTo(rotateTo, duration, ease));
+        return this;
+    };
+    ko.Sequence.prototype.fadeTo = function (fadeTo, duration, ease) {
+        this._actions.push(new ko.FadeTo(fadeTo, duration, ease));
+        return this;
+    };
+    ko.Sequence.prototype.wait = function (duration) {
+        this._actions.push(new ko.Wait(duration));
+        return this;
     };
     return ko;
 })(ko || {});
