@@ -4,7 +4,7 @@ A high-level framework for creating games with HTML5 and JavaScript.
 
 Features
 --------
-* Scenes
+* Scenes and transitions between scenes
 * Actions
 * Input with keyboard an mouse
 * Sprites
