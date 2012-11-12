@@ -6,9 +6,10 @@ Features
 --------
 * Scenes
 * Actions
-* Input
+* Input with keyboard an mouse
 * Sprites
 * Menus
+* Collision detection with bounding boxes
 
 Getting started
 ---------------
