@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.3.0 - 2012-11-08
+/*! Kogame.js - v0.4.0 - 2012-11-12
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -149,10 +149,12 @@ var ko = (function (ko) {
     ko.Renderer.prototype.endTransform = function () {
         this.context.restore();
     };
-    ko.Renderer.prototype.drawRect = function (color, opacity) {
-        this.context.globalAlpha = opacity;
-        this.context.fillStyle = color;
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ko.Renderer.prototype.drawRect = function (node) {
+        this.context.globalAlpha = node.opacity;
+        this.context.fillStyle = node.color;
+        this.context.fillRect(node.anchor.x * -node.size.width, 
+            node.anchor.y * -node.size.height, node.size.width, 
+            node.size.height);
     };
     ko.Renderer.prototype.drawSprite = function (sprite) {
         this.context.globalAlpha = sprite.opacity;
@@ -219,13 +221,6 @@ var ko = (function (ko) {
             this._children[i].render();
         }
     };
-    ko.Node.prototype.perform = function (action) {
-        if (action.target) {
-            throw new Error("Action is already in use.");
-        }
-        action.init(this);
-        this._actions.push(action);
-    };
     ko.Node.prototype.addChild = function (child) {
         if (child === this) {
             throw new Error("Can't add a child to itself");
@@ -235,6 +230,13 @@ var ko = (function (ko) {
         }
         this._children.push(child);
         child.parent = this;
+    };
+    ko.Node.prototype.perform = function (action) {
+        if (action.target) {
+            throw new Error("Action is already in use");
+        }
+        action.init(this);
+        this._actions.push(action);
     };
     ko.Node.prototype.moveTo = function (x, y, duration, ease) {
         this.perform(new ko.MoveTo(x, y, duration, ease));
@@ -256,6 +258,15 @@ var ko = (function (ko) {
         var sequence = new ko.Sequence([], repeat);
         this._actions.push(sequence);
         return sequence;
+    };
+    ko.Node.prototype.isColliding = function (node, separate) {
+        if (!this.boundingBox) {
+            this.boundingBox = new ko.BoundingBox(this);
+        }
+        if (!node.boundingBox) {
+            node.boundingBox = new ko.BoundingBox(node);
+        }
+        return this.boundingBox.isIntersecting(node.boundingBox, separate);
     };
     return ko;
 })(ko || {});
@@ -303,6 +314,57 @@ var ko = (function (ko) {
     ko.Label.prototype.setFont = function (font) {
         this.font = font;
         this.size = ko.renderer.getLabelSize(this);
+    };
+    return ko;
+})(ko || {});
+
+var ko = (function (ko) {
+    ko.BoundingBox = function (node) {
+        this.node = node;
+    };
+    ko.BoundingBox.prototype.isIntersecting = function(bbox, separate) {
+        var a = {
+            x: this.node.position.x,
+            y: this.node.position.y,
+            w: this.node.size.width,
+            h: this.node.size.height
+        };
+        a.l = a.x - a.w * this.node.anchor.x;
+        a.r = a.x + a.w * (1 - this.node.anchor.x);
+        a.t = a.y - a.h * this.node.anchor.y;
+        a.b = a.y + a.h * (1 - this.node.anchor.y);
+        var b = {
+            x: bbox.node.position.x,
+            y: bbox.node.position.y,
+            w: bbox.node.size.width,
+            h: bbox.node.size.height
+        };
+        b.l = b.x - b.w * bbox.node.anchor.x;
+        b.r = b.x + b.w * (1 - bbox.node.anchor.x);
+        b.t = b.y - b.h * bbox.node.anchor.y;
+        b.b = b.y + b.h * (1 - bbox.node.anchor.y);
+        if (a.r <= b.l || a.l >= b.r || a.b <= b.t || a.t >= b.b) {
+            return false;
+        }
+        if (!separate) {
+            return true;
+        }
+        var diffx = Math.min(Math.abs(a.r - b.l), Math.abs(b.r - a.l));
+        var diffy = Math.min(Math.abs(a.b - b.t), Math.abs(b.b - a.t));
+        if (diffx < diffy) {
+            if (a.l < b.l) {
+                this.node.position.x = b.l - a.w * (1 - this.node.anchor.x);
+            } else {
+                this.node.position.x = b.r + a.w * this.node.anchor.x;
+            }
+        } else {
+            if (a.t < b.t) {
+                this.node.position.y = b.t - a.h * (1 - this.node.anchor.y);
+            } else {
+                this.node.position.y = b.b + a.h * this.node.anchor.y;
+            }
+        }
+        return true;
     };
     return ko;
 })(ko || {});
@@ -415,8 +477,14 @@ var ko = (function (ko) {
     ko.Wait.prototype = Object.create(ko.Action.prototype);
 
     ko.actionEase = {
-        sineInOut: function (t) {
-            return -0.5 * (Math.cos(Math.PI * t) - 1);
+        backIn: function (t) {
+            var overshoot = 1.70158;
+            return t * t * ((overshoot + 1) * t - overshoot);
+        },
+        backOut: function (t) {
+            var overshoot = 1.70158;
+            t = t - 1;
+            return t * t * ((overshoot + 1) * t + overshoot) + 1;
         },
         backInOut: function (t) {
             var overshoot = 1.70158 * 1.525;
@@ -427,6 +495,15 @@ var ko = (function (ko) {
                 t = t - 2;
                 return (t * t * ((overshoot + 1) * t + overshoot)) / 2 + 1;
             }
+        },
+        sineIn: function (t) {
+            return -1 * Math.cos(t * Math.PI * 2) + 1;
+        },
+        sineOut: function (t) {
+            return Math.sin(t * Math.PI * 2);
+        },
+        sineInOut: function (t) {
+            return -0.5 * (Math.cos(Math.PI * t) - 1);
         }
     };
 

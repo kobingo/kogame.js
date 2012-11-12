@@ -20,10 +20,12 @@ var ko = (function (ko) {
     ko.Renderer.prototype.endTransform = function () {
         this.context.restore();
     };
-    ko.Renderer.prototype.drawRect = function (color, opacity) {
-        this.context.globalAlpha = opacity;
-        this.context.fillStyle = color;
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ko.Renderer.prototype.drawRect = function (node) {
+        this.context.globalAlpha = node.opacity;
+        this.context.fillStyle = node.color;
+        this.context.fillRect(node.anchor.x * -node.size.width, 
+            node.anchor.y * -node.size.height, node.size.width, 
+            node.size.height);
     };
     ko.Renderer.prototype.drawSprite = function (sprite) {
         this.context.globalAlpha = sprite.opacity;

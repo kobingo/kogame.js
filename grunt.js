@@ -25,6 +25,7 @@ module.exports = function(grunt) {
           'src/node.js', 
           'src/sprite.js',
           'src/label.js', 
+          'src/collision.js',
           'src/action.js', 
           'src/sequence.js', 
           'src/director.js', 

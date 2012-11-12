@@ -106,8 +106,14 @@ var ko = (function (ko) {
     ko.Wait.prototype = Object.create(ko.Action.prototype);
 
     ko.actionEase = {
-        sineInOut: function (t) {
-            return -0.5 * (Math.cos(Math.PI * t) - 1);
+        backIn: function (t) {
+            var overshoot = 1.70158;
+            return t * t * ((overshoot + 1) * t - overshoot);
+        },
+        backOut: function (t) {
+            var overshoot = 1.70158;
+            t = t - 1;
+            return t * t * ((overshoot + 1) * t + overshoot) + 1;
         },
         backInOut: function (t) {
             var overshoot = 1.70158 * 1.525;
@@ -118,6 +124,15 @@ var ko = (function (ko) {
                 t = t - 2;
                 return (t * t * ((overshoot + 1) * t + overshoot)) / 2 + 1;
             }
+        },
+        sineIn: function (t) {
+            return -1 * Math.cos(t * Math.PI * 2) + 1;
+        },
+        sineOut: function (t) {
+            return Math.sin(t * Math.PI * 2);
+        },
+        sineInOut: function (t) {
+            return -0.5 * (Math.cos(Math.PI * t) - 1);
         }
     };
 

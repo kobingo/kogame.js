@@ -43,13 +43,6 @@ var ko = (function (ko) {
             this._children[i].render();
         }
     };
-    ko.Node.prototype.perform = function (action) {
-        if (action.target) {
-            throw new Error("Action is already in use.");
-        }
-        action.init(this);
-        this._actions.push(action);
-    };
     ko.Node.prototype.addChild = function (child) {
         if (child === this) {
             throw new Error("Can't add a child to itself");
@@ -59,6 +52,13 @@ var ko = (function (ko) {
         }
         this._children.push(child);
         child.parent = this;
+    };
+    ko.Node.prototype.perform = function (action) {
+        if (action.target) {
+            throw new Error("Action is already in use");
+        }
+        action.init(this);
+        this._actions.push(action);
     };
     ko.Node.prototype.moveTo = function (x, y, duration, ease) {
         this.perform(new ko.MoveTo(x, y, duration, ease));
@@ -80,6 +80,15 @@ var ko = (function (ko) {
         var sequence = new ko.Sequence([], repeat);
         this._actions.push(sequence);
         return sequence;
+    };
+    ko.Node.prototype.isColliding = function (node, separate) {
+        if (!this.boundingBox) {
+            this.boundingBox = new ko.BoundingBox(this);
+        }
+        if (!node.boundingBox) {
+            node.boundingBox = new ko.BoundingBox(node);
+        }
+        return this.boundingBox.isIntersecting(node.boundingBox, separate);
     };
     return ko;
 })(ko || {});

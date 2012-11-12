@@ -6,6 +6,20 @@ var createNodeAndPerformAction = function (action) {
 	return node;
 };
 
+var createNode = function(x, y, width, height) {
+	var node = new ko.Node();
+	node.position = { x: x, y: y };
+	node.size = { width: width, height: height };
+	return node;
+};
+
+var createBoundingBox = function (x, y, width, height) {
+	var node = new ko.Node();
+	node.position = { x: x, y: y };
+	node.size = { width: width, height: height};
+	return new ko.BoundingBox(node);
+};
+
 var assertGameIsInitialized = function () {
 	if (!ko.game.initialized) {
 		ko.game.init('game');
@@ -72,7 +86,7 @@ test("node - update children", function () {
 	deepEqual(node2.position, { x: 3, y: 3 });
 });
 
-test("node - add child (should throw exception) 1", function () {
+test("node - add child (should throw exception A)", function () {
 	throws(
         function() {
             var node = new ko.Node();
@@ -82,7 +96,7 @@ test("node - add child (should throw exception) 1", function () {
     );
 });
 
-test("node - add child (should throw exception) 2", function () {
+test("node - add child (should throw exception B)", function () {
 	throws(
         function() {
             var node1 = new ko.Node();
@@ -131,6 +145,17 @@ test("node - sequence", function () {
 	equal(node.rotation, 1);
 });
 
+test("node - is colliding", function () {
+	var node1 = createNode(100, 100, 100, 100);
+	var node2 = createNode(150, 180, 100, 100);
+	ok(!node1.boundingBox);
+	ok(!node2.boundingBox);
+	ok(node2.isColliding(node1, true));
+	ok(node1.boundingBox);
+	ok(node2.boundingBox);
+	deepEqual(node2.position, { x: 150, y: 200 });
+});
+
 /* Sprite */
 
 test("sprite - create (with image)", function () {
@@ -162,6 +187,83 @@ test("label - create", function () {
 	var label = new ko.Label("Kogame.js", "32px arial");
 	ok(label.size.width > 0);
 	ok(label instanceof ko.Node);
+});
+
+/* Collision */
+
+test("bounding box - is intersecting left", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	var bbox2 = createBoundingBox(50, 100, 100, 100);
+	ok(bbox2.isIntersecting(bbox1));
+});
+
+test("bounding box - is intersecting rigth", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	var bbox2 = createBoundingBox(150, 100, 100, 100);
+	ok(bbox2.isIntersecting(bbox1));
+});
+
+test("bounding box - is intersecting top", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	var bbox2 = createBoundingBox(100, 150, 100, 100);
+	ok(bbox2.isIntersecting(bbox1));
+});
+
+test("bounding box - is intersecting bottom", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	var bbox2 = createBoundingBox(100, 50, 100, 100);
+	ok(bbox2.isIntersecting(bbox1));
+});
+
+test("bounding box - is intersecting (anchor 0.5 0.5)", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	bbox1.node.anchor = { x: 0.5, y: 0.5 };
+	var bbox2 = createBoundingBox(150, 150, 100, 100);
+	bbox2.node.anchor = { x: 0.5, y: 0.5 };
+	ok(bbox2.isIntersecting(bbox1));
+});
+
+test("bounding box - is not intersecting", function () {
+	var bbox1 = createBoundingBox(100, 100, 50, 50);
+	var bbox2 = createBoundingBox(150, 150, 100, 100);
+	ok(!bbox2.isIntersecting(bbox1));
+});
+
+test("bounding box - separate left", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	var bbox2 = createBoundingBox(75, 100, 50, 50);
+	bbox2.isIntersecting(bbox1, true);
+	deepEqual(bbox2.node.position, { x: 50, y: 100 });
+});
+
+test("bounding box - separate right", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	var bbox2 = createBoundingBox(175, 100, 50, 50);
+	bbox2.isIntersecting(bbox1, true);
+	deepEqual(bbox2.node.position, { x: 200, y: 100 });
+});
+
+test("bounding box - separate top", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	var bbox2 = createBoundingBox(100, 75, 50, 50);
+	bbox2.isIntersecting(bbox1, true);
+	deepEqual(bbox2.node.position, { x: 100, y: 50 });
+});
+
+test("bounding box - separate bottom", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	var bbox2 = createBoundingBox(100, 175, 50, 50);
+	bbox2.isIntersecting(bbox1, true);
+	deepEqual(bbox2.node.position, { x: 100, y: 200 });
+});
+
+test("bounding box - separate (anchor 0.5 0.5)", function () {
+	var bbox1 = createBoundingBox(100, 100, 100, 100);
+	bbox1.node.anchor = { x: 0.5, y: 0.5 };
+	var bbox2 = createBoundingBox(75, 100, 50, 50);
+	bbox2.node.anchor = { x: 0.5, y: 0.5 };
+	bbox2.isIntersecting(bbox1, true);
+	deepEqual(bbox2.node.position, { x: 175, y: 100 });
 });
 
 /* Action */
@@ -315,6 +417,22 @@ test("fade to - update (delta 2.0)", function () {
 	var node = createNodeAndPerformAction(fadeTo);
 	node.update(2);
 	equal(node.opacity, opacity);
+});
+
+/* Wait */
+
+test("wait - create", function () {
+	var wait = new ko.Wait(1);
+	ok(wait instanceof ko.Action);
+});
+
+test("wait - update", function () {
+	var node = new ko.Node();
+	node.sequence().wait(1).scaleTo(2, 1).init(node);
+	node.update(1);
+	equal(node.scale, 1);
+	node.update(1);
+	equal(node.scale, 2);
 });
 
 /* Sequence */
