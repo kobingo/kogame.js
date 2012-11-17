@@ -3,38 +3,33 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>kogame.js - Mouse</title>
+    <title>KoGame.js</title>
 </head>
-<body style="margin: 0px">
+<body>
     <canvas id="game" width="768" height="432"></canvas>
-    <script type="text/javascript" src="script/kogame-0.1.0.js"></script>
+    <script type="text/javascript" src="js/kogame-0.4.5.js"></script>
     <script type="text/javascript">
+    	// Initialize game with the canvas id
 		ko.game.init('game');
-
-		var image = new Image();
-		image.src = 'img/gem.png';
-
-		var sprite = new ko.Sprite(image);
-		sprite.position = { 
-			x: ko.renderer.size.width / 2, 
-			y: ko.renderer.size.height / 2 
-		};
+		// Create sprite with specified url
+		var sprite = new ko.Sprite('img/gem.png');
+		sprite.centerPosition();
+		sprite.centerAnchor();
 		sprite.scale = 0.5;
-
-		var scene = new ko.Scene(function (delta) {
-			sprite.position = { 
-				x: ko.mouse.position.x, 
-				y: ko.mouse.position.y 
-			};
-			if (ko.mouse.wasButtonPressed()) {
-				sprite.perform(new ko.Sequence([
-					new ko.ScaleTo(0.6, 0.05, ko.actionEase.sineInOut),
-					new ko.ScaleTo(0.5, 0.05, ko.actionEase.sineInOut)
-				], 1));
+		// Create scene with handleinput and add sprite
+		var scene = new ko.Scene({
+			handleInput: function (delta) {
+				if (ko.keyboard.wasKeyPressed(ko.keyboard.ENTER)) {
+					// Create sequence with scaleto actions
+					sprite.sequence(1).
+						scaleTo(0.6, 0.2, ko.actionEase.sineInOut).
+						scaleTo(0.5, 0.2, ko.actionEase.sineInOut).
+						init(sprite);
+				}
 			}
 		});
 		scene.addChild(sprite);
-
+		// Start the game loop
 		ko.game.run(scene);
     </script>
 </body>

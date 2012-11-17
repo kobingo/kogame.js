@@ -32,6 +32,7 @@ var ko = (function (ko) {
                 return;
             }
             currentAction = this._actions[this.actionIndex];
+            currentAction.init(this.target);
             if ((!currentAction.duration && lastActionDuration) || 
                 (currentAction.duration && !lastActionDuration)) {
                 // When the duration has already been zero we want to return 

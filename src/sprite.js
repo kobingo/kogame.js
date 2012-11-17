@@ -1,6 +1,6 @@
 var ko = (function (ko) {
-    ko.Sprite = function (image, update) {
-        ko.Node.call(this, update);
+    ko.Sprite = function (image, args) {
+        ko.Node.call(this, args);
         /*global Image*/
         if (image instanceof Image) {
             this.image = image;

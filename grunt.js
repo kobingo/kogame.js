@@ -1,6 +1,24 @@
 /*global module:false*/
 module.exports = function(grunt) {
 
+  var _src = [
+    '<banner:meta.banner>', 
+    'src/game.js', 
+    'src/keyboard.js', 
+    'src/mouse.js', 
+    'src/renderer.js', 
+    'src/node.js', 
+    'src/sprite.js',
+    'src/label.js', 
+    'src/collision.js',
+    'src/action.js', 
+    'src/sequence.js', 
+    'src/director.js',
+    'src/scene.js', 
+    'src/transition.js', 
+    'src/menu.js'
+  ];
+
   // Project configuration.
   grunt.initConfig({
     pkg: '<json:package.json>',
@@ -16,24 +34,12 @@ module.exports = function(grunt) {
     },
     concat: {
       dist: {
-        src: [
-          '<banner:meta.banner>', 
-          'src/game.js', 
-          'src/keyboard.js', 
-          'src/mouse.js', 
-          'src/renderer.js', 
-          'src/node.js', 
-          'src/sprite.js',
-          'src/label.js', 
-          'src/collision.js',
-          'src/action.js', 
-          'src/sequence.js', 
-          'src/director.js',
-          'src/scene.js', 
-          'src/transition.js', 
-          'src/menu.js'
-        ],
+        src: _src,
         dest: '<%= pkg.name %>-<%= pkg.version %>.js'
+      },
+      exam: {
+        src: _src,
+        dest: 'examples/js/<%= pkg.name %>-<%= pkg.version %>.js'
       }
     },
     qunit: {

@@ -280,6 +280,10 @@ var ko = (function (ko) {
         }
         return this.boundingBox.isIntersecting(node.boundingBox, separate);
     };
+    ko.Node.prototype.centerPosition = function () {
+        var center = ko.renderer.center;
+        this.position = { x: center.x, y: center.y };
+    };
     ko.Node.prototype.centerAnchor = function () {
         this.anchor = { x: 0.5, y: 0.5 };
     };
@@ -287,8 +291,8 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Sprite = function (image, update) {
-        ko.Node.call(this, update);
+    ko.Sprite = function (image, args) {
+        ko.Node.call(this, args);
         /*global Image*/
         if (image instanceof Image) {
             this.image = image;
@@ -399,15 +403,15 @@ var ko = (function (ko) {
         if (!this.target) {
             throw new Error("Action has not been initialized with a target");
         }
-        if (this.value === 1) {
-            // We are already done with this action
-            return;
-        }
         if (!this.duration) {
             // When the duration is zero we just want to perform the action
             // with a value of one
             this.value = 1;
             this.perform();
+            return;
+        }
+        if (this.isComplete()) {
+            // We are already done with this action
             return;
         }
         this.elapsed += delta;
@@ -575,6 +579,7 @@ var ko = (function (ko) {
                 return;
             }
             currentAction = this._actions[this.actionIndex];
+            currentAction.init(this.target);
             if ((!currentAction.duration && lastActionDuration) || 
                 (currentAction.duration && !lastActionDuration)) {
                 // When the duration has already been zero we want to return 

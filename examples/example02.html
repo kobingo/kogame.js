@@ -3,30 +3,28 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>kogame.js - Action</title>
+    <title>KoGame.js</title>
 </head>
-<body style="margin: 0px">
+<body>
     <canvas id="game" width="768" height="432"></canvas>
-    <script type="text/javascript" src="script/kogame-0.1.0.js"></script>
+    <script type="text/javascript" src="js/kogame-0.4.5.js"></script>
     <script type="text/javascript">
+    	// Initialize game with the canvas id
 		ko.game.init('game');
-
-		var image = new Image();
-		image.src = 'img/gem.png';
-
-		var sprite = new ko.Sprite(image);
-		sprite.position = { x: -150, y: ko.renderer.size.height / 2 };
+		// Create sprite with specified url
+		var sprite = new ko.Sprite('img/gem.png');
+		sprite.centerPosition();
+		sprite.centerAnchor();
 		sprite.scale = 0.5;
-
-		var action = new ko.MoveTo({ 
-			x: ko.renderer.size.width / 2, 
-			y: ko.renderer.size.height / 2 }, 
-		5);
-		sprite.perform(action);
-
+		// Create sequence with moveto actions
+		sprite.sequence().
+			moveTo(284, 216, 1, ko.actionEase.sineInOut).
+			moveTo(484, 216, 1, ko.actionEase.sineInOut).
+			init(sprite);
+		// Create scene and add sprite
 		var scene = new ko.Scene();
 		scene.addChild(sprite);
-
+		// Start the game loop
 		ko.game.run(scene);
     </script>
 </body>

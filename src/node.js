@@ -95,6 +95,10 @@ var ko = (function (ko) {
         }
         return this.boundingBox.isIntersecting(node.boundingBox, separate);
     };
+    ko.Node.prototype.centerPosition = function () {
+        var center = ko.renderer.center;
+        this.position = { x: center.x, y: center.y };
+    };
     ko.Node.prototype.centerAnchor = function () {
         this.anchor = { x: 0.5, y: 0.5 };
     };
