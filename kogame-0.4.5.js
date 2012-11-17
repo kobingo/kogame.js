@@ -399,6 +399,10 @@ var ko = (function (ko) {
         if (!this.target) {
             throw new Error("Action has not been initialized with a target");
         }
+        if (this.value === 1) {
+            // We are already done with this action
+            return;
+        }
         if (!this.duration) {
             // When the duration is zero we just want to perform the action
             // with a value of one
@@ -649,14 +653,18 @@ var ko = (function (ko) {
     Director.prototype.fadeTo = function(scene, duration, color) {
         var transition = new ko.Transition({
             fromScene: this.scene, 
-            toScene: scene, 
-            duration1: duration / 2, 
-            duration2: duration / 2, 
-            ease: ko.actionEase.sineInOut
+            outDuration: duration / 2, 
+            inDuration: duration / 2, 
+            ease: ko.actionEase.sineInOut,
+            transitionIn: function (d) {
+                transition.fromScene = null;
+                transition.toScene = scene;
+                transition.toScene.position = { x: 0, y: 0};
+            }
         });
         transition.render = function () {
             ko.Transition.prototype.render.call(this);
-            ko.renderer.clear(color, this.state === ko.transitionState.TRANSITION2 ? 
+            ko.renderer.clear(color, this.state === ko.transitionState.IN ? 
                 1 - transition.transitionValue : transition.transitionValue);
         };
         this.scene = transition;
@@ -667,14 +675,14 @@ var ko = (function (ko) {
         var transition = new ko.Transition({
             fromScene: _fromScene, 
             toScene: _toScene, 
-            duration1: duration, 
+            outDuration: duration, 
             ease: ko.actionEase.sineInOut,
-            transition1: function (d) {
+            transitionOut: function (d) {
                 _fromScene.moveTo(x, y, duration, ease);
                 _toScene.position = { x: -x, y: -y };
                 _toScene.moveTo(0, 0, duration, ease);
             },
-            transition2: function (d) {
+            transitionIn: function (d) {
             }
         });
         this.scene = transition;
@@ -694,46 +702,48 @@ var ko = (function (ko) {
 
 var ko = (function (ko) {
     ko.Transition = function (args) {
+        args = args || {};
         if (!args.fromScene) {
-            throw new Error("Must specify a scene to transition from");
+            throw new Error("'fromScene' have not been specified when creating transition");
         }
-        if (!args.toScene) {
-            throw new Error("Must specify a scene to transition to");
-        }
-        if (!args.duration1) {
-            throw new Error("Must specify a duration");
+        if (!args.inDuration && !args.outDuration) {
+            throw new Error("Both 'inDuration' and 'outDuration' can not be empty when creating transition");
         }
         ko.Scene.call(this);
         this.fromScene = args.fromScene;
         this.toScene = args.toScene;
-        this.duration1 = args.duration1;
-        this.duration2 = args.duration2;
+        this.inDuration = args.inDuration;
+        this.outDuration = args.outDuration;
         this.transitionValue = 0;
         var self = this;
-        var transition1Begin = new ko.Call(function () {
-            self.state = ko.transitionState.TRANSITION1;
-            if (args.transition1) {
-                args.transition1(self.duration1);
+        var transitionOutBegin = new ko.Call(function () {
+            self.state = ko.transitionState.OUT;
+            if (args.transitionOut) {
+                args.transitionOut(self.outDuration);
             }
         });
-        this.transition1 = new ko.Action(args.duration1);
-        var wait = new ko.Wait(args.wait || 0);
-        var transition2Begin = new ko.Call(function () {
-            self.state = ko.transitionState.TRANSITION2;
-            if (args.transition2) {
-                args.transition2(self.duration2);
+        this.transitionOut = new ko.Action(args.outDuration);
+        var wait = new ko.Wait(args.waitDuration || 0);
+        var transitionInBegin = new ko.Call(function () {
+            self.state = ko.transitionState.IN;
+            if (args.transitionIn) {
+                args.transitionIn(self.inDuration);
             }
         });
-        this.transition2 = new ko.Action(args.duration2);
+        this.transitionIn = new ko.Action(args.inDuration);
         var complete = new ko.Call(function () {
+            if (!self.toScene) {
+                throw new Error("'toScene' must have been set when transition is complete");
+            }
             ko.director.scene = self.toScene;
+            self.state = ko.transitionState.COMPLETE;
         });
         var sequence = new ko.Sequence([
-            transition1Begin,
-            this.transition1,
+            transitionOutBegin,
+            this.transitionOut,
             wait,
-            transition2Begin,
-            this.transition2,
+            transitionInBegin,
+            this.transitionIn,
             complete
         ], 1);
         this.perform(sequence);
@@ -742,24 +752,33 @@ var ko = (function (ko) {
     ko.Transition.prototype.update = function (delta) {
         ko.Scene.prototype.update.call(this, delta);
         switch (this.state) {
-            case ko.transitionState.TRANSITION1:
-                this.transitionValue = this.transition1.value;
+            case ko.transitionState.OUT:
+                this.transitionValue = this.transitionOut.value;
                 break;
-            case ko.transitionState.TRANSITION2:
-                this.transitionValue = this.transition2.value;
+            case ko.transitionState.IN:
+                this.transitionValue = this.transitionIn.value;
                 break;
         }
-        this.fromScene.update(delta);
-        this.toScene.update(delta);
+        if (this.fromScene) {
+            this.fromScene.update(delta);
+        }
+        if (this.toScene) {
+            this.toScene.update(delta);
+        }
     };
     ko.Transition.prototype.render = function () {
         ko.Scene.prototype.render.call(this);
-        this.fromScene.render();
-        this.toScene.render();
+        if (this.fromScene) {
+            this.fromScene.render();
+        }
+        if (this.toScene) {
+            this.toScene.render();
+        }
     };
     ko.transitionState = {
-        TRANSITION1: 0,
-        TRANSITION2: 1
+        OUT: 0,
+        IN: 1,
+        COMPLETE: 2
     };
     return ko;
 })(ko || {});

@@ -549,7 +549,7 @@ test("transition - create", function () {
 	var transition = new ko.Transition({
 		fromScene: sceneA,
 		toScene: sceneB,
-		duration1: 1
+		outDuration: 1
 	});
 	ok(transition instanceof ko.Scene);
 });
@@ -559,7 +559,7 @@ test("transition - create (should throw exception A)", function () {
         function() {
 			var transition = new ko.Transition({});
         },
-        /Must specify a scene to transition from/
+        /'fromScene' have not been specified when creating transition/
     );
 });
 
@@ -567,28 +567,14 @@ test("transition - create (should throw exception B)", function () {
 	throws(
         function() {
 			var transition = new ko.Transition({
-				fromScene: new ko.Scene(),
-				toScene: undefined,
-				duration1: 1
+				fromScene: new ko.Scene()
 			});
         },
-        /Must specify a scene to transition to/
+        /Both 'inDuration' and 'outDuration' can not be empty when creating transition/
     );
 });
 
-test("transition - create (should throw exception C)", function () {
-	throws(
-        function() {
-			var transition = new ko.Transition({
-				fromScene: new ko.Scene(),
-				toScene: new ko.Scene()
-			});
-        },
-        /Must specify a duration/
-    );
-});
-
-test("transition - update (with duration1)", function () {
+test("transition - update (with outDuration)", function () {
 	var sceneAUpdated = false;
 	var sceneBUpdated = false;
 	var sceneA = new ko.Scene({ 
@@ -604,7 +590,7 @@ test("transition - update (with duration1)", function () {
 	var transition = new ko.Transition({
 		fromScene: sceneA,
 		toScene: sceneB,
-		duration1: 1
+		outDuration: 1
 	});
 	ko.director.scene = transition;
 	transition.update(0.9);
@@ -615,7 +601,7 @@ test("transition - update (with duration1)", function () {
 	ok(sceneBUpdated);
 });
 
-test("transition - update (with duration1 and duration2)", function () {
+test("transition - update (with outDuration and induration)", function () {
 	var sceneAUpdated = false;
 	var sceneBUpdated = false;
 	var sceneA = new ko.Scene({ 
@@ -631,8 +617,8 @@ test("transition - update (with duration1 and duration2)", function () {
 	var transition = new ko.Transition({
 		fromScene: sceneA,
 		toScene: sceneB,
-		duration1: 1,
-		duration2: 1
+		outDuration: 1,
+		inDuration: 1
 	});
 	ko.director.scene = transition;
 	transition.update(0.9);

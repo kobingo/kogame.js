@@ -14,6 +14,10 @@ var ko = (function (ko) {
         if (!this.target) {
             throw new Error("Action has not been initialized with a target");
         }
+        if (this.value === 1) {
+            // We are already done with this action
+            return;
+        }
         if (!this.duration) {
             // When the duration is zero we just want to perform the action
             // with a value of one
