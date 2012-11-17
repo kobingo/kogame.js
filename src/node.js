@@ -1,5 +1,6 @@
 var ko = (function (ko) {
-    ko.Node = function (update) {
+    ko.Node = function (args) {
+        args = args || {};
         this.position = { x: 0, y: 0 };
         this.velocity = { x: 0, y: 0 };
         this.acceleration = { x: 0, y: 0 };
@@ -10,10 +11,11 @@ var ko = (function (ko) {
         this.anchor = { x: 0, y: 0 };
         this.size = { width: 0, height: 0 };
         this.visible = true;
-        this._children = [];
-        this._actions = [];
-        this._update = update || function (delta) {};
-        this._render = function () {};
+        this.children = [];
+        this.actions = [];
+        this._update = args.update || function (delta) {};
+        this._handleInput = args.handleInput || function () {};
+        this._render = args.render || function () {};
     };
     ko.Node.prototype.update = function (delta) {
         this.velocity.x += this.acceleration.x;
@@ -21,11 +23,11 @@ var ko = (function (ko) {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
         var i;
-        for (i = 0; i < this._actions.length; i++) {
-            this._actions[i].update(delta);
+        for (i = 0; i < this.actions.length; i++) {
+            this.actions[i].update(delta);
         }
-        for (i = 0; i < this._children.length; i++) {
-            this._children[i].update(delta);
+        for (i = 0; i < this.children.length; i++) {
+            this.children[i].update(delta);
         }
         this._update(delta);
     };
@@ -35,12 +37,15 @@ var ko = (function (ko) {
         }
         ko.renderer.beginTransform(this);
         this._render();
-        this.renderChildren();
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].render();
+        }
         ko.renderer.endTransform();
     };
-    ko.Node.prototype.renderChildren = function () {
-        for (var i = 0; i < this._children.length; i++) {
-            this._children[i].render();
+    ko.Node.prototype.handleInput = function () {
+        this._handleInput();
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].handleInput();
         }
     };
     ko.Node.prototype.addChild = function (child) {
@@ -50,7 +55,7 @@ var ko = (function (ko) {
         if (child.parent) {
             throw new Error("Child already has a parent");
         }
-        this._children.push(child);
+        this.children.push(child);
         child.parent = this;
     };
     ko.Node.prototype.perform = function (action) {
@@ -58,7 +63,7 @@ var ko = (function (ko) {
             throw new Error("Action is already in use");
         }
         action.init(this);
-        this._actions.push(action);
+        this.actions.push(action);
     };
     ko.Node.prototype.moveTo = function (x, y, duration, ease) {
         this.perform(new ko.MoveTo(x, y, duration, ease));
@@ -78,7 +83,7 @@ var ko = (function (ko) {
     };
     ko.Node.prototype.sequence = function (repeat) {
         var sequence = new ko.Sequence([], repeat);
-        this._actions.push(sequence);
+        this.actions.push(sequence);
         return sequence;
     };
     ko.Node.prototype.isColliding = function (node, separate) {
@@ -89,6 +94,9 @@ var ko = (function (ko) {
             node.boundingBox = new ko.BoundingBox(node);
         }
         return this.boundingBox.isIntersecting(node.boundingBox, separate);
+    };
+    ko.Node.prototype.centerAnchor = function () {
+        this.anchor = { x: 0.5, y: 0.5 };
     };
     return ko;
 })(ko || {});

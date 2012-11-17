@@ -8,7 +8,6 @@ var ko = (function (ko) {
             this.image = new Image();
             this.image.src = image;
         }
-        this.anchor = { x: 0.5, y: 0.5 };
         var self = this;
         this.image.addEventListener('load', function () {
             self.size = { 

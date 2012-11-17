@@ -28,8 +28,9 @@ module.exports = function(grunt) {
           'src/collision.js',
           'src/action.js', 
           'src/sequence.js', 
-          'src/director.js', 
+          'src/director.js',
           'src/scene.js', 
+          'src/transition.js', 
           'src/menu.js'
         ],
         dest: '<%= pkg.name %>-<%= pkg.version %>.js'

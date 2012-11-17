@@ -14,7 +14,6 @@ var ko = (function (ko) {
     ko.Menu.prototype = Object.create(ko.Node.prototype);
     ko.Menu.prototype.update = function (delta) {
         ko.Node.prototype.update.call(this, delta);
-        this.handleInput();
         for (var i = 0; i < this._labels.length; i++) {
             this._labels[i].color = i === this.selectedItemIndex ? 
                 this.selectedItemColor : this.itemColor;

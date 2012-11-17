@@ -1,4 +1,4 @@
-/*global ko, Image, start, test, asyncTest, throws, ok, equal, deepEqual, expect*/
+/*global ko, Image, start, test, asyncTest, throws, ok, equal, deepEqual, strictEqual, expect*/
 
 var createNodeAndPerformAction = function (action) {
 	var node = new ko.Node();
@@ -60,6 +60,7 @@ test("node - create", function () {
 	equal(node.opacity, 1);
 	ok(node.visible);
 	equal(node.color, 'rgb(255,255,255)');
+	deepEqual(node.anchor, { x: 0, y: 0 });
 });
 
 test("node - update", function () {
@@ -154,6 +155,13 @@ test("node - is colliding", function () {
 	ok(node1.boundingBox);
 	ok(node2.boundingBox);
 	deepEqual(node2.position, { x: 150, y: 200 });
+});
+
+test("node - center anchor", function () {
+	var node = new ko.Node();
+	deepEqual(node.anchor, { x: 0, y: 0 });
+	node.centerAnchor();
+	deepEqual(node.anchor, { x: 0.5, y: 0.5 });
 });
 
 /* Sprite */
@@ -435,6 +443,27 @@ test("wait - update", function () {
 	equal(node.scale, 2);
 });
 
+/* Call */
+
+test("call - create", function () {
+	var call = new ko.Call();
+	ok(call instanceof ko.Action);
+});
+
+test("call - update", function () {
+	var _args;
+	var call = new ko.Call(function (args) {
+		_args = args;
+	}, {
+		name: "Ville",
+		age: 2
+	});
+	call.init(new ko.Node());
+	call.update(1);
+	equal(_args.name, "Ville");
+	equal(_args.age, 2);
+});
+
 /* Sequence */
 
 test("sequence - create", function () {
@@ -495,8 +524,10 @@ test("sequence - is complete", function () {
 
 test("director - update scene", function () {
 	var updated = false;
-	var scene = new ko.Scene(function (delta) {
-		updated = true;
+	var scene = new ko.Scene({
+		update: function (delta) {
+			updated = true;
+		}
 	});
 	ko.director.scene = scene;
 	ko.director.update(1);
@@ -509,4 +540,109 @@ test("scene - create", function () {
 	var scene = new ko.Scene();
 	ok(scene instanceof ko.Node);
 });
+
+/* Transition */
+
+test("transition - create", function () {
+	var sceneA = new ko.Scene();
+	var sceneB = new ko.Scene();
+	var transition = new ko.Transition({
+		fromScene: sceneA,
+		toScene: sceneB,
+		duration1: 1
+	});
+	ok(transition instanceof ko.Scene);
+});
+
+test("transition - create (should throw exception A)", function () {
+	throws(
+        function() {
+			var transition = new ko.Transition({});
+        },
+        /Must specify a scene to transition from/
+    );
+});
+
+test("transition - create (should throw exception B)", function () {
+	throws(
+        function() {
+			var transition = new ko.Transition({
+				fromScene: new ko.Scene(),
+				toScene: undefined,
+				duration1: 1
+			});
+        },
+        /Must specify a scene to transition to/
+    );
+});
+
+test("transition - create (should throw exception C)", function () {
+	throws(
+        function() {
+			var transition = new ko.Transition({
+				fromScene: new ko.Scene(),
+				toScene: new ko.Scene()
+			});
+        },
+        /Must specify a duration/
+    );
+});
+
+test("transition - update (with duration1)", function () {
+	var sceneAUpdated = false;
+	var sceneBUpdated = false;
+	var sceneA = new ko.Scene({ 
+		update: function (delta) {
+			sceneAUpdated = true;
+		}
+	});
+	var sceneB = new ko.Scene({ 
+		update: function (delta) {
+			sceneBUpdated = true;
+		}
+	});
+	var transition = new ko.Transition({
+		fromScene: sceneA,
+		toScene: sceneB,
+		duration1: 1
+	});
+	ko.director.scene = transition;
+	transition.update(0.9);
+	ok(ko.director.scene === transition);
+	transition.update(0.1);
+	ok(ko.director.scene === sceneB);
+	ok(sceneAUpdated);
+	ok(sceneBUpdated);
+});
+
+test("transition - update (with duration1 and duration2)", function () {
+	var sceneAUpdated = false;
+	var sceneBUpdated = false;
+	var sceneA = new ko.Scene({ 
+		update: function (delta) {
+			sceneAUpdated = true;
+		}
+	});
+	var sceneB = new ko.Scene({ 
+		update: function (delta) {
+			sceneBUpdated = true;
+		}
+	});
+	var transition = new ko.Transition({
+		fromScene: sceneA,
+		toScene: sceneB,
+		duration1: 1,
+		duration2: 1
+	});
+	ko.director.scene = transition;
+	transition.update(0.9);
+	ok(ko.director.scene === transition);
+	transition.update(0.1);
+	ok(ko.director.scene === transition);
+	transition.update(1);
+	ok(ko.director.scene === sceneB);
+	ok(sceneAUpdated);
+	ok(sceneBUpdated);
+});
+
 

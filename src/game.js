@@ -6,8 +6,12 @@ var ko = (function (ko) {
         window.mozRequestAnimationFrame ||
         window.oRequestAnimationFrame ||
         window.msRequestAnimationFrame;
+    var lastTime = Date.now();
     var _animate = function () {
-        ko.game.update(0.016);
+        var currentTime = Date.now();
+        var elapsedTime = currentTime - lastTime;
+        lastTime = currentTime;
+        ko.game.update(elapsedTime * 0.001);
         _animationFrame(_animate);
     };
     var Game = function () {

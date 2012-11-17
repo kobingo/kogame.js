@@ -6,9 +6,12 @@ var ko = (function (ko) {
         this.size = { width: canvas.width, height: canvas.height };
         this.center = { x: canvas.width / 2, y: canvas.height / 2};
     };
-    ko.Renderer.prototype.clear = function () {
-        this.context.globalAlpha = 1;
-        this.context.fillStyle = this.clearColor;
+    ko.Renderer.prototype.clear = function (color, opacity) {
+        if (opacity === undefined) {
+            opacity = 1;
+        }
+        this.context.globalAlpha = opacity;
+        this.context.fillStyle = color || this.clearColor;
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
     ko.Renderer.prototype.beginTransform = function (node) {

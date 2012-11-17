@@ -3,12 +3,12 @@ var ko = (function (ko) {
         this._actions = actions;
         this.repeatCount = repeatCount;
         this.actionIndex = 0;
-        this.loopCount = 0;
+        this.repeatIndex = 0;
     };
     ko.Sequence.prototype = Object.create(ko.Action.prototype);
     ko.Sequence.prototype.init = function (target) {
         this.actionIndex = 0;
-        this.loopCount = 0;
+        this.repeatIndex = 0;
         if (this._actions.length > 0) {
             this._actions[0].init(target);
         }
@@ -18,15 +18,30 @@ var ko = (function (ko) {
         if (this._actions.length === 0) {
             return;
         }
-        if (this.loopCount >= this.repeatCount) {
+        if (this.repeatIndex >= this.repeatCount) {
             return;
         }
         var currentAction = this._actions[this.actionIndex];
         currentAction.update(delta);
+        var durationIsZero;
         while (currentAction.isComplete()) {
+            var lastActionDuration = currentAction.duration;
             this.nextAction();
+            // When we have repeated enough times we want to return immediatly
+            if (this.repeatIndex >= this.repeatCount) {
+                return;
+            }
             currentAction = this._actions[this.actionIndex];
-            if (!currentAction.duration) {
+            if ((!currentAction.duration && lastActionDuration) || 
+                (currentAction.duration && !lastActionDuration)) {
+                // When the duration has already been zero we want to return 
+                // immediatly, this is from keeping it a never ending loop
+                if (durationIsZero) {
+                    break;
+                }
+                durationIsZero = true;
+            }
+            if (!currentAction.duration || !lastActionDuration) {
                 currentAction.update(delta);
             }
         }
@@ -35,15 +50,19 @@ var ko = (function (ko) {
         if (!this.repeatCount) {
             return false;
         }
-        return this.loopCount >= this.repeatCount;
+        return this.repeatIndex >= this.repeatCount;
     };
     ko.Sequence.prototype.nextAction = function () {
         this.actionIndex++;
         if (this.actionIndex >= this._actions.length) {
             this.actionIndex = 0;
-            this.loopCount++;
+            this.repeatIndex++;
         }
         this._actions[this.actionIndex].init(this.target);
+    };
+    ko.Sequence.prototype.action = function (action) {
+        this._actions.push(action);
+        return this;
     };
     ko.Sequence.prototype.moveTo = function (x, y, duration, ease) {
         this._actions.push(new ko.MoveTo(x, y, duration, ease));
@@ -63,6 +82,10 @@ var ko = (function (ko) {
     };
     ko.Sequence.prototype.wait = function (duration) {
         this._actions.push(new ko.Wait(duration));
+        return this;
+    };
+    ko.Sequence.prototype.call = function (func, args) {
+        this._actions.push(new ko.Call(func, args));
         return this;
     };
     return ko;

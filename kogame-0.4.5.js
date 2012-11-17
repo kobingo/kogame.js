@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.4.0 - 2012-11-12
+/*! Kogame.js - v0.4.5 - 2012-11-17
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -10,8 +10,12 @@ var ko = (function (ko) {
         window.mozRequestAnimationFrame ||
         window.oRequestAnimationFrame ||
         window.msRequestAnimationFrame;
+    var lastTime = Date.now();
     var _animate = function () {
-        ko.game.update(0.016);
+        var currentTime = Date.now();
+        var elapsedTime = currentTime - lastTime;
+        lastTime = currentTime;
+        ko.game.update(elapsedTime * 0.001);
         _animationFrame(_animate);
     };
     var Game = function () {
@@ -135,9 +139,12 @@ var ko = (function (ko) {
         this.size = { width: canvas.width, height: canvas.height };
         this.center = { x: canvas.width / 2, y: canvas.height / 2};
     };
-    ko.Renderer.prototype.clear = function () {
-        this.context.globalAlpha = 1;
-        this.context.fillStyle = this.clearColor;
+    ko.Renderer.prototype.clear = function (color, opacity) {
+        if (opacity === undefined) {
+            opacity = 1;
+        }
+        this.context.globalAlpha = opacity;
+        this.context.fillStyle = color || this.clearColor;
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
     ko.Renderer.prototype.beginTransform = function (node) {
@@ -177,7 +184,8 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Node = function (update) {
+    ko.Node = function (args) {
+        args = args || {};
         this.position = { x: 0, y: 0 };
         this.velocity = { x: 0, y: 0 };
         this.acceleration = { x: 0, y: 0 };
@@ -188,10 +196,11 @@ var ko = (function (ko) {
         this.anchor = { x: 0, y: 0 };
         this.size = { width: 0, height: 0 };
         this.visible = true;
-        this._children = [];
-        this._actions = [];
-        this._update = update || function (delta) {};
-        this._render = function () {};
+        this.children = [];
+        this.actions = [];
+        this._update = args.update || function (delta) {};
+        this._handleInput = args.handleInput || function () {};
+        this._render = args.render || function () {};
     };
     ko.Node.prototype.update = function (delta) {
         this.velocity.x += this.acceleration.x;
@@ -199,11 +208,11 @@ var ko = (function (ko) {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
         var i;
-        for (i = 0; i < this._actions.length; i++) {
-            this._actions[i].update(delta);
+        for (i = 0; i < this.actions.length; i++) {
+            this.actions[i].update(delta);
         }
-        for (i = 0; i < this._children.length; i++) {
-            this._children[i].update(delta);
+        for (i = 0; i < this.children.length; i++) {
+            this.children[i].update(delta);
         }
         this._update(delta);
     };
@@ -213,12 +222,15 @@ var ko = (function (ko) {
         }
         ko.renderer.beginTransform(this);
         this._render();
-        this.renderChildren();
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].render();
+        }
         ko.renderer.endTransform();
     };
-    ko.Node.prototype.renderChildren = function () {
-        for (var i = 0; i < this._children.length; i++) {
-            this._children[i].render();
+    ko.Node.prototype.handleInput = function () {
+        this._handleInput();
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].handleInput();
         }
     };
     ko.Node.prototype.addChild = function (child) {
@@ -228,7 +240,7 @@ var ko = (function (ko) {
         if (child.parent) {
             throw new Error("Child already has a parent");
         }
-        this._children.push(child);
+        this.children.push(child);
         child.parent = this;
     };
     ko.Node.prototype.perform = function (action) {
@@ -236,7 +248,7 @@ var ko = (function (ko) {
             throw new Error("Action is already in use");
         }
         action.init(this);
-        this._actions.push(action);
+        this.actions.push(action);
     };
     ko.Node.prototype.moveTo = function (x, y, duration, ease) {
         this.perform(new ko.MoveTo(x, y, duration, ease));
@@ -256,7 +268,7 @@ var ko = (function (ko) {
     };
     ko.Node.prototype.sequence = function (repeat) {
         var sequence = new ko.Sequence([], repeat);
-        this._actions.push(sequence);
+        this.actions.push(sequence);
         return sequence;
     };
     ko.Node.prototype.isColliding = function (node, separate) {
@@ -267,6 +279,9 @@ var ko = (function (ko) {
             node.boundingBox = new ko.BoundingBox(node);
         }
         return this.boundingBox.isIntersecting(node.boundingBox, separate);
+    };
+    ko.Node.prototype.centerAnchor = function () {
+        this.anchor = { x: 0.5, y: 0.5 };
     };
     return ko;
 })(ko || {});
@@ -281,7 +296,6 @@ var ko = (function (ko) {
             this.image = new Image();
             this.image.src = image;
         }
-        this.anchor = { x: 0.5, y: 0.5 };
         var self = this;
         this.image.addEventListener('load', function () {
             self.size = { 
@@ -407,6 +421,9 @@ var ko = (function (ko) {
     ko.Action.prototype.perform = function () {
     };
     ko.Action.prototype.isComplete = function () {
+        if (!this.duration) {
+            return true;
+        }
         return this.elapsed >= this.duration;
     };
 
@@ -476,6 +493,16 @@ var ko = (function (ko) {
     };
     ko.Wait.prototype = Object.create(ko.Action.prototype);
 
+    ko.Call = function (func, args) {
+        ko.Action.call(this, 0);
+        this.func = func;
+        this.args = args;
+    };
+    ko.Call.prototype = Object.create(ko.Action.prototype);
+    ko.Call.prototype.perform = function () {
+        this.func(this.args);
+    };
+
     ko.actionEase = {
         backIn: function (t) {
             var overshoot = 1.70158;
@@ -515,12 +542,12 @@ var ko = (function (ko) {
         this._actions = actions;
         this.repeatCount = repeatCount;
         this.actionIndex = 0;
-        this.loopCount = 0;
+        this.repeatIndex = 0;
     };
     ko.Sequence.prototype = Object.create(ko.Action.prototype);
     ko.Sequence.prototype.init = function (target) {
         this.actionIndex = 0;
-        this.loopCount = 0;
+        this.repeatIndex = 0;
         if (this._actions.length > 0) {
             this._actions[0].init(target);
         }
@@ -530,15 +557,30 @@ var ko = (function (ko) {
         if (this._actions.length === 0) {
             return;
         }
-        if (this.loopCount >= this.repeatCount) {
+        if (this.repeatIndex >= this.repeatCount) {
             return;
         }
         var currentAction = this._actions[this.actionIndex];
         currentAction.update(delta);
+        var durationIsZero;
         while (currentAction.isComplete()) {
+            var lastActionDuration = currentAction.duration;
             this.nextAction();
+            // When we have repeated enough times we want to return immediatly
+            if (this.repeatIndex >= this.repeatCount) {
+                return;
+            }
             currentAction = this._actions[this.actionIndex];
-            if (!currentAction.duration) {
+            if ((!currentAction.duration && lastActionDuration) || 
+                (currentAction.duration && !lastActionDuration)) {
+                // When the duration has already been zero we want to return 
+                // immediatly, this is from keeping it a never ending loop
+                if (durationIsZero) {
+                    break;
+                }
+                durationIsZero = true;
+            }
+            if (!currentAction.duration || !lastActionDuration) {
                 currentAction.update(delta);
             }
         }
@@ -547,15 +589,19 @@ var ko = (function (ko) {
         if (!this.repeatCount) {
             return false;
         }
-        return this.loopCount >= this.repeatCount;
+        return this.repeatIndex >= this.repeatCount;
     };
     ko.Sequence.prototype.nextAction = function () {
         this.actionIndex++;
         if (this.actionIndex >= this._actions.length) {
             this.actionIndex = 0;
-            this.loopCount++;
+            this.repeatIndex++;
         }
         this._actions[this.actionIndex].init(this.target);
+    };
+    ko.Sequence.prototype.action = function (action) {
+        this._actions.push(action);
+        return this;
     };
     ko.Sequence.prototype.moveTo = function (x, y, duration, ease) {
         this._actions.push(new ko.MoveTo(x, y, duration, ease));
@@ -577,78 +623,144 @@ var ko = (function (ko) {
         this._actions.push(new ko.Wait(duration));
         return this;
     };
+    ko.Sequence.prototype.call = function (func, args) {
+        this._actions.push(new ko.Call(func, args));
+        return this;
+    };
     return ko;
 })(ko || {});
 
 var ko = (function (ko) {
     var Director = function () {
-        this.fadeTransition = new FadeTransition();
     };
     Director.prototype.update = function (delta) {
         if (!this.scene) {
             return;
         }
+        this.scene.handleInput();
         this.scene.update(delta);
-        this.fadeTransition.update(delta);
     };
     Director.prototype.render = function () {
         if (!this.scene) {
             return;
         }
         this.scene.render();
-        this.fadeTransition.render();
     };
     Director.prototype.fadeTo = function(scene, duration, color) {
-        this.fadeTransition.fadeTo(scene, duration, color);
+        var transition = new ko.Transition({
+            fromScene: this.scene, 
+            toScene: scene, 
+            duration1: duration / 2, 
+            duration2: duration / 2, 
+            ease: ko.actionEase.sineInOut
+        });
+        transition.render = function () {
+            ko.Transition.prototype.render.call(this);
+            ko.renderer.clear(color, this.state === ko.transitionState.TRANSITION2 ? 
+                1 - transition.transitionValue : transition.transitionValue);
+        };
+        this.scene = transition;
     };
-    var FadeTransition = function () {
-        this.value = 0;
-        this.update = function (delta) {
-            if (!this.fadeToAction) {
-                return;
+    Director.prototype.slideTo = function(scene, x, y, duration, ease) {
+        var _fromScene = this.scene;
+        var _toScene = scene;
+        var transition = new ko.Transition({
+            fromScene: _fromScene, 
+            toScene: _toScene, 
+            duration1: duration, 
+            ease: ko.actionEase.sineInOut,
+            transition1: function (d) {
+                _fromScene.moveTo(x, y, duration, ease);
+                _toScene.position = { x: -x, y: -y };
+                _toScene.moveTo(0, 0, duration, ease);
+            },
+            transition2: function (d) {
             }
-            var isFadingOut = this.fadeToScene ? true : false;
-            this.fadeToAction.update(delta);
-            if (isFadingOut) {
-                this.value = this.fadeToAction.value;
-                if (this.fadeToAction.isComplete()  ) {
-                    ko.director.scene = this.fadeToScene;
-                    this.fadeToAction.init();
-                    delete this.fadeToScene;
-                }
-            } else {
-                this.value = 1 - this.fadeToAction.value;
-                if (this.fadeToAction.isComplete()) {
-                    delete this.fadeToAction;
-                }
-            }
-        };
-        this.render = function (delta) {
-            if (this.value > 0) {
-                ko.renderer.drawRect(this.color, this.value);
-            }
-        };
-        this.fadeTo = function (scene, duration, color) {
-            if (this.fadeToAction) {
-                return;
-            }
-            this.fadeToScene = scene;
-            this.duration = duration || 1;
-            this.color = color || 'rgb(0,0,0)';
-            this.fadeToAction = new ko.Action(
-                this.duration / 2, ko.actionEase.sineInOut);
-        };
+        });
+        this.scene = transition;
     };
     ko.director = new Director();
     return ko;
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Scene = function (update) {
-        ko.Node.call(this, update);
-        this.anchor = { x: 0.5, y: 0.5 };
+    ko.Scene = function (args) {
+        ko.Node.call(this, args);
+        this.centerAnchor();
     };
     ko.Scene.prototype = Object.create(ko.Node.prototype);
+    return ko;
+})(ko || {});
+
+var ko = (function (ko) {
+    ko.Transition = function (args) {
+        if (!args.fromScene) {
+            throw new Error("Must specify a scene to transition from");
+        }
+        if (!args.toScene) {
+            throw new Error("Must specify a scene to transition to");
+        }
+        if (!args.duration1) {
+            throw new Error("Must specify a duration");
+        }
+        ko.Scene.call(this);
+        this.fromScene = args.fromScene;
+        this.toScene = args.toScene;
+        this.duration1 = args.duration1;
+        this.duration2 = args.duration2;
+        this.transitionValue = 0;
+        var self = this;
+        var transition1Begin = new ko.Call(function () {
+            self.state = ko.transitionState.TRANSITION1;
+            if (args.transition1) {
+                args.transition1(self.duration1);
+            }
+        });
+        this.transition1 = new ko.Action(args.duration1);
+        var wait = new ko.Wait(args.wait || 0);
+        var transition2Begin = new ko.Call(function () {
+            self.state = ko.transitionState.TRANSITION2;
+            if (args.transition2) {
+                args.transition2(self.duration2);
+            }
+        });
+        this.transition2 = new ko.Action(args.duration2);
+        var complete = new ko.Call(function () {
+            ko.director.scene = self.toScene;
+        });
+        var sequence = new ko.Sequence([
+            transition1Begin,
+            this.transition1,
+            wait,
+            transition2Begin,
+            this.transition2,
+            complete
+        ], 1);
+        this.perform(sequence);
+    };
+    ko.Transition.prototype = Object.create(ko.Scene.prototype);
+    ko.Transition.prototype.update = function (delta) {
+        ko.Scene.prototype.update.call(this, delta);
+        switch (this.state) {
+            case ko.transitionState.TRANSITION1:
+                this.transitionValue = this.transition1.value;
+                break;
+            case ko.transitionState.TRANSITION2:
+                this.transitionValue = this.transition2.value;
+                break;
+        }
+        this.fromScene.update(delta);
+        this.toScene.update(delta);
+    };
+    ko.Transition.prototype.render = function () {
+        ko.Scene.prototype.render.call(this);
+        this.fromScene.render();
+        this.toScene.render();
+    };
+    ko.transitionState = {
+        TRANSITION1: 0,
+        TRANSITION2: 1
+    };
     return ko;
 })(ko || {});
 
@@ -668,7 +780,6 @@ var ko = (function (ko) {
     ko.Menu.prototype = Object.create(ko.Node.prototype);
     ko.Menu.prototype.update = function (delta) {
         ko.Node.prototype.update.call(this, delta);
-        this.handleInput();
         for (var i = 0; i < this._labels.length; i++) {
             this._labels[i].color = i === this.selectedItemIndex ? 
                 this.selectedItemColor : this.itemColor;

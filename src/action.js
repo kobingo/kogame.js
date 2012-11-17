@@ -36,6 +36,9 @@ var ko = (function (ko) {
     ko.Action.prototype.perform = function () {
     };
     ko.Action.prototype.isComplete = function () {
+        if (!this.duration) {
+            return true;
+        }
         return this.elapsed >= this.duration;
     };
 
@@ -104,6 +107,16 @@ var ko = (function (ko) {
         ko.Action.call(this, duration);
     };
     ko.Wait.prototype = Object.create(ko.Action.prototype);
+
+    ko.Call = function (func, args) {
+        ko.Action.call(this, 0);
+        this.func = func;
+        this.args = args;
+    };
+    ko.Call.prototype = Object.create(ko.Action.prototype);
+    ko.Call.prototype.perform = function () {
+        this.func(this.args);
+    };
 
     ko.actionEase = {
         backIn: function (t) {
