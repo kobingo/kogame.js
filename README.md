@@ -49,7 +49,3 @@ then create a html file with the following markup.
         </script>
     </body>
     </html>
-
-Examples
---------
-* Draw a sprite
