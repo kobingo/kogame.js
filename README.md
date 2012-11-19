@@ -1,6 +1,6 @@
 Kogame.js
 =========
-A high-level framework for creating games with HTML5 and JavaScript.
+Framework for creating games with HTML5 and JavaScript. Currently in beta and many things can change between releases.
 
 Features
 --------
@@ -49,7 +49,3 @@ then create a html file with the following markup.
         </script>
     </body>
     </html>
-
-Examples
---------
-* Draw a sprite
