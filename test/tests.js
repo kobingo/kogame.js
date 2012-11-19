@@ -549,7 +549,7 @@ test("transition - create", function () {
 	var transition = new ko.Transition({
 		fromScene: sceneA,
 		toScene: sceneB,
-		outDuration: 1
+		inDuration: 1
 	});
 	ok(transition instanceof ko.Scene);
 });
@@ -593,6 +593,8 @@ test("transition - update (with outDuration)", function () {
 		outDuration: 1
 	});
 	ko.director.scene = transition;
+	transition.update(0.1);
+	ok(ko.director.scene === transition);
 	transition.update(0.9);
 	ok(ko.director.scene === transition);
 	transition.update(0.1);
@@ -601,7 +603,7 @@ test("transition - update (with outDuration)", function () {
 	ok(sceneBUpdated);
 });
 
-test("transition - update (with outDuration and induration)", function () {
+test("transition - update (with outDuration and inDuration)", function () {
 	var sceneAUpdated = false;
 	var sceneBUpdated = false;
 	var sceneA = new ko.Scene({ 
@@ -621,11 +623,16 @@ test("transition - update (with outDuration and induration)", function () {
 		inDuration: 1
 	});
 	ko.director.scene = transition;
-	transition.update(0.9);
-	ok(ko.director.scene === transition);
 	transition.update(0.1);
+	equal(transition.state, ko.transitionState.OUT);
+	ok(ko.director.scene === transition);
+	transition.update(0.5);
+	ok(ko.director.scene === transition);
+	transition.update(0.5);
+	equal(transition.state, ko.transitionState.IN);
 	ok(ko.director.scene === transition);
 	transition.update(1);
+	equal(transition.state, ko.transitionState.COMPLETE);
 	ok(ko.director.scene === sceneB);
 	ok(sceneAUpdated);
 	ok(sceneBUpdated);

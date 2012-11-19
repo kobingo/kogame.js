@@ -143,10 +143,10 @@ var ko = (function (ko) {
             }
         },
         sineIn: function (t) {
-            return -1 * Math.cos(t * Math.PI * 2) + 1;
+            return -1 * Math.cos(t * Math.PI / 2) + 1;
         },
         sineOut: function (t) {
-            return Math.sin(t * Math.PI * 2);
+            return Math.sin(t * (Math.PI / 2));
         },
         sineInOut: function (t) {
             return -0.5 * (Math.cos(Math.PI * t) - 1);

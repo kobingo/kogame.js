@@ -33,16 +33,7 @@ var ko = (function (ko) {
             }
             currentAction = this._actions[this.actionIndex];
             currentAction.init(this.target);
-            if ((!currentAction.duration && lastActionDuration) || 
-                (currentAction.duration && !lastActionDuration)) {
-                // When the duration has already been zero we want to return 
-                // immediatly, this is from keeping it a never ending loop
-                if (durationIsZero) {
-                    break;
-                }
-                durationIsZero = true;
-            }
-            if (!currentAction.duration || !lastActionDuration) {
+            if (!currentAction.duration) {
                 currentAction.update(delta);
             }
         }
