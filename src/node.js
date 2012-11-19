@@ -26,11 +26,11 @@ var ko = (function (ko) {
         for (i = 0; i < this.actions.length; i++) {
             this.actions[i].update(delta);
         }
-        /*for (i = this.actions.length - 1; i > 0; i--) {
+        for (i = this.actions.length - 1; i >= 0; i--) {
             if (this.actions[i].isComplete()) {
                 this.actions.splice(i, 1);
             }
-        }*/
+        }
         for (i = 0; i < this.children.length; i++) {
             this.children[i].update(delta);
         }
