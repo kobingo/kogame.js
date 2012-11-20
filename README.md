@@ -1,6 +1,6 @@
 Kogame.js
 =========
-Framework for creating games with HTML5 and JavaScript. Currently in beta and many things can change between releases.
+Framework for creating games with HTML5 and JavaScript. Currently in beta.
 
 Features
 --------
