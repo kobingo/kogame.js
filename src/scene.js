@@ -5,9 +5,9 @@ var ko = (function (ko) {
         this.opacity = 0;
     };
     ko.Scene.prototype = Object.create(ko.Node.prototype);
-    ko.Scene.prototype.render = function () {
-		ko.Node.prototype.render.call(this);
-		ko.renderer.clear(this.color, this.opacity);
+    ko.Scene.prototype.draw = function () {
+		ko.Node.prototype.draw.call(this);
+		ko.graphics.clear(this.color, this.opacity);
     };
     return ko;
 })(ko || {});

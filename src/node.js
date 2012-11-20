@@ -15,7 +15,7 @@ var ko = (function (ko) {
         this.actions = [];
         this._update = args.update || function (delta) {};
         this._handleInput = args.handleInput || function () {};
-        this._render = args.render || function () {};
+        this._draw = args.draw || function () {};
     };
     ko.Node.prototype.update = function (delta) {
         this.velocity.x += this.acceleration.x;
@@ -36,16 +36,16 @@ var ko = (function (ko) {
         }
         this._update(delta);
     };
-    ko.Node.prototype.render = function () {
+    ko.Node.prototype.draw = function () {
         if (!this.visible) {
             return;
         }
-        ko.renderer.beginTransform(this);
-        this._render();
+        ko.graphics.beginTransform(this);
+        this._draw();
         for (var i = 0; i < this.children.length; i++) {
-            this.children[i].render();
+            this.children[i].draw();
         }
-        ko.renderer.endTransform();
+        ko.graphics.endTransform();
     };
     ko.Node.prototype.handleInput = function () {
         this._handleInput();
@@ -101,7 +101,7 @@ var ko = (function (ko) {
         return this.boundingBox.isIntersecting(node.boundingBox, separate);
     };
     ko.Node.prototype.centerPosition = function () {
-        var center = ko.renderer.center;
+        var center = ko.graphics.center;
         this.position = { x: center.x, y: center.y };
     };
     ko.Node.prototype.centerAnchor = function () {

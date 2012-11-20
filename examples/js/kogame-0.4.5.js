@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.4.5 - 2012-11-19
+/*! Kogame.js - v0.4.5 - 2012-11-20
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -26,7 +26,7 @@ var ko = (function (ko) {
         if (!canvas) {
             throw new Error("Couldn't find canvas '" + canvasId + "'");
         }
-        ko.renderer = new ko.Renderer(canvas);
+        ko.graphics = new ko.Graphics2D(canvas);
         this.initialized = true;
     };
     Game.prototype.run = function (scene) {
@@ -38,8 +38,8 @@ var ko = (function (ko) {
     };
     Game.prototype.update = function (delta) {
         ko.director.update(delta);
-        ko.renderer.clear();
-        ko.director.render();
+        ko.graphics.clear();
+        ko.director.draw();
         ko.keyboard.update();
         ko.mouse.update();
     };
@@ -132,14 +132,14 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Renderer = function (canvas) {
+    ko.Graphics2D = function (canvas) {
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
         this.clearColor = 'rgb(100, 149, 237)';
         this.size = { width: canvas.width, height: canvas.height };
         this.center = { x: canvas.width / 2, y: canvas.height / 2};
     };
-    ko.Renderer.prototype.clear = function (color, opacity) {
+    ko.Graphics2D.prototype.clear = function (color, opacity) {
         if (opacity === undefined) {
             opacity = 1;
         }
@@ -147,35 +147,35 @@ var ko = (function (ko) {
         this.context.fillStyle = color || this.clearColor;
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
-    ko.Renderer.prototype.beginTransform = function (node) {
+    ko.Graphics2D.prototype.beginTransform = function (node) {
         this.context.save();
         this.context.translate(node.position.x, node.position.y);
         this.context.scale(node.scale, node.scale);
         this.context.rotate(node.rotation);
     };
-    ko.Renderer.prototype.endTransform = function () {
+    ko.Graphics2D.prototype.endTransform = function () {
         this.context.restore();
     };
-    ko.Renderer.prototype.drawRect = function (node) {
+    ko.Graphics2D.prototype.drawRect = function (node) {
         this.context.globalAlpha = node.opacity;
         this.context.fillStyle = node.color;
         this.context.fillRect(node.anchor.x * -node.size.width, 
             node.anchor.y * -node.size.height, node.size.width, 
             node.size.height);
     };
-    ko.Renderer.prototype.drawSprite = function (sprite) {
+    ko.Graphics2D.prototype.drawSprite = function (sprite) {
         this.context.globalAlpha = sprite.opacity;
         this.context.drawImage(sprite.image, sprite.anchor.x * 
             -sprite.size.width, sprite.anchor.y * -sprite.size.height);
     };
-    ko.Renderer.prototype.drawLabel = function (label) {
+    ko.Graphics2D.prototype.drawLabel = function (label) {
         this.context.fillStyle = label.color;
         this.context.font = label.font;
         this.context.globalAlpha = label.opacity;
         this.context.fillText(label.text, label.anchor.x * 
             -label.size.width, label.anchor.y * -label.size.height);
     };
-    ko.Renderer.prototype.getLabelSize = function (label) {
+    ko.Graphics2D.prototype.getLabelSize = function (label) {
         this.context.font = label.font;
         var textMetrics = this.context.measureText(label.text);
         return { width: textMetrics.width, height: 0 };
@@ -200,7 +200,7 @@ var ko = (function (ko) {
         this.actions = [];
         this._update = args.update || function (delta) {};
         this._handleInput = args.handleInput || function () {};
-        this._render = args.render || function () {};
+        this._draw = args.draw || function () {};
     };
     ko.Node.prototype.update = function (delta) {
         this.velocity.x += this.acceleration.x;
@@ -211,26 +211,26 @@ var ko = (function (ko) {
         for (i = 0; i < this.actions.length; i++) {
             this.actions[i].update(delta);
         }
-        /*for (i = this.actions.length - 1; i > 0; i--) {
+        for (i = this.actions.length - 1; i >= 0; i--) {
             if (this.actions[i].isComplete()) {
                 this.actions.splice(i, 1);
             }
-        }*/
+        }
         for (i = 0; i < this.children.length; i++) {
             this.children[i].update(delta);
         }
         this._update(delta);
     };
-    ko.Node.prototype.render = function () {
+    ko.Node.prototype.draw = function () {
         if (!this.visible) {
             return;
         }
-        ko.renderer.beginTransform(this);
-        this._render();
+        ko.graphics.beginTransform(this);
+        this._draw();
         for (var i = 0; i < this.children.length; i++) {
-            this.children[i].render();
+            this.children[i].draw();
         }
-        ko.renderer.endTransform();
+        ko.graphics.endTransform();
     };
     ko.Node.prototype.handleInput = function () {
         this._handleInput();
@@ -286,7 +286,7 @@ var ko = (function (ko) {
         return this.boundingBox.isIntersecting(node.boundingBox, separate);
     };
     ko.Node.prototype.centerPosition = function () {
-        var center = ko.renderer.center;
+        var center = ko.graphics.center;
         this.position = { x: center.x, y: center.y };
     };
     ko.Node.prototype.centerAnchor = function () {
@@ -312,8 +312,8 @@ var ko = (function (ko) {
                 height: self.image.height 
             };
         });
-        this._render = function () {
-            ko.renderer.drawSprite(this);
+        this._draw = function () {
+            ko.graphics.drawSprite(this);
         };
     };
     ko.Sprite.prototype = Object.create(ko.Node.prototype);
@@ -325,18 +325,18 @@ var ko = (function (ko) {
         ko.Node.call(this);
         this.setText(text);
         this.setFont(font);
-        this._render = function () {
-            ko.renderer.drawLabel(this);
+        this._draw = function () {
+            ko.graphics.drawLabel(this);
         };
     };
     ko.Label.prototype = Object.create(ko.Node.prototype);
     ko.Label.prototype.setText = function (text) {
         this.text = text;
-        this.size = ko.renderer.getLabelSize(this);
+        this.size = ko.graphics.getLabelSize(this);
     };
     ko.Label.prototype.setFont = function (font) {
         this.font = font;
-        this.size = ko.renderer.getLabelSize(this);
+        this.size = ko.graphics.getLabelSize(this);
     };
     return ko;
 })(ko || {});
@@ -645,11 +645,11 @@ var ko = (function (ko) {
         this.scene.handleInput();
         this.scene.update(delta);
     };
-    Director.prototype.render = function () {
+    Director.prototype.draw = function () {
         if (!this.scene) {
             return;
         }
-        this.scene.render();
+        this.scene.draw();
     };
     Director.prototype.fadeTo = function(scene, duration, color) {
         var transition = new ko.Transition({
@@ -702,9 +702,9 @@ var ko = (function (ko) {
         this.opacity = 0;
     };
     ko.Scene.prototype = Object.create(ko.Node.prototype);
-    ko.Scene.prototype.render = function () {
-		ko.Node.prototype.render.call(this);
-		ko.renderer.clear(this.color, this.opacity);
+    ko.Scene.prototype.draw = function () {
+		ko.Node.prototype.draw.call(this);
+		ko.graphics.clear(this.color, this.opacity);
     };
     return ko;
 })(ko || {});
@@ -760,13 +760,13 @@ var ko = (function (ko) {
             this.toScene.update(delta);
         }
     };
-    ko.Transition.prototype.render = function () {
-        ko.Scene.prototype.render.call(this);
+    ko.Transition.prototype.draw = function () {
+        ko.Scene.prototype.draw.call(this);
         if (this.fromScene) {
-            this.fromScene.render();
+            this.fromScene.draw();
         }
         if (this.toScene) {
-            this.toScene.render();
+            this.toScene.draw();
         }
     };
     ko.transitionState = {
@@ -798,10 +798,10 @@ var ko = (function (ko) {
         this.fromScene.update(delta);
         this.toScene.update(delta);
     };
-    ko.Popup.prototype.render = function () {
-        ko.Scene.prototype.render.call(this);
-        this.fromScene.render();
-        this.toScene.render();
+    ko.Popup.prototype.draw = function () {
+        ko.Scene.prototype.draw.call(this);
+        this.fromScene.draw();
+        this.toScene.draw();
     };
     ko.Popup.prototype.handleInput = function () {
         ko.Scene.prototype.handleInput.call(this);
@@ -881,8 +881,8 @@ var ko = (function (ko) {
             this._labels[i].anchor = { x: 0.5, y: 0.5 };
         }
         this.position = { 
-            x: ko.renderer.size.width / 2, 
-            y: ko.renderer.size.height / 2
+            x: ko.graphics.size.width / 2, 
+            y: ko.graphics.size.height / 2
         };
     };
     ko.Menu.prototype.nextItem = function () {

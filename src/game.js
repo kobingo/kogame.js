@@ -22,7 +22,7 @@ var ko = (function (ko) {
         if (!canvas) {
             throw new Error("Couldn't find canvas '" + canvasId + "'");
         }
-        ko.renderer = new ko.Renderer(canvas);
+        ko.graphics = new ko.Graphics2D(canvas);
         this.initialized = true;
     };
     Game.prototype.run = function (scene) {
@@ -34,8 +34,8 @@ var ko = (function (ko) {
     };
     Game.prototype.update = function (delta) {
         ko.director.update(delta);
-        ko.renderer.clear();
-        ko.director.render();
+        ko.graphics.clear();
+        ko.director.draw();
         ko.keyboard.update();
         ko.mouse.update();
     };

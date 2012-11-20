@@ -8,11 +8,11 @@ var ko = (function (ko) {
         this.scene.handleInput();
         this.scene.update(delta);
     };
-    Director.prototype.render = function () {
+    Director.prototype.draw = function () {
         if (!this.scene) {
             return;
         }
-        this.scene.render();
+        this.scene.draw();
     };
     Director.prototype.fadeTo = function(scene, duration, color) {
         var transition = new ko.Transition({

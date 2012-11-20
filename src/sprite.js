@@ -15,8 +15,8 @@ var ko = (function (ko) {
                 height: self.image.height 
             };
         });
-        this._render = function () {
-            ko.renderer.drawSprite(this);
+        this._draw = function () {
+            ko.graphics.drawSprite(this);
         };
     };
     ko.Sprite.prototype = Object.create(ko.Node.prototype);

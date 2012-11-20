@@ -51,8 +51,8 @@ var ko = (function (ko) {
             this._labels[i].anchor = { x: 0.5, y: 0.5 };
         }
         this.position = { 
-            x: ko.renderer.size.width / 2, 
-            y: ko.renderer.size.height / 2
+            x: ko.graphics.size.width / 2, 
+            y: ko.graphics.size.height / 2
         };
     };
     ko.Menu.prototype.nextItem = function () {

@@ -6,7 +6,7 @@ module.exports = function(grunt) {
     'src/game.js', 
     'src/keyboard.js', 
     'src/mouse.js', 
-    'src/renderer.js', 
+    'src/graphics.js', 
     'src/node.js', 
     'src/sprite.js',
     'src/label.js', 

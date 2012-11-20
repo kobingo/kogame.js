@@ -49,13 +49,13 @@ var ko = (function (ko) {
             this.toScene.update(delta);
         }
     };
-    ko.Transition.prototype.render = function () {
-        ko.Scene.prototype.render.call(this);
+    ko.Transition.prototype.draw = function () {
+        ko.Scene.prototype.draw.call(this);
         if (this.fromScene) {
-            this.fromScene.render();
+            this.fromScene.draw();
         }
         if (this.toScene) {
-            this.toScene.render();
+            this.toScene.draw();
         }
     };
     ko.transitionState = {
@@ -87,10 +87,10 @@ var ko = (function (ko) {
         this.fromScene.update(delta);
         this.toScene.update(delta);
     };
-    ko.Popup.prototype.render = function () {
-        ko.Scene.prototype.render.call(this);
-        this.fromScene.render();
-        this.toScene.render();
+    ko.Popup.prototype.draw = function () {
+        ko.Scene.prototype.draw.call(this);
+        this.fromScene.draw();
+        this.toScene.draw();
     };
     ko.Popup.prototype.handleInput = function () {
         ko.Scene.prototype.handleInput.call(this);
