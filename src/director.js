@@ -15,42 +15,28 @@ var ko = (function (ko) {
         this.scene.draw();
     };
     Director.prototype.fadeTo = function(scene, duration, color) {
-        var transition = new ko.Transition({
-            fromScene: this.scene, 
-            outDuration: duration, 
-            inDuration: duration, 
-            ease: ko.actionEase.sineInOut,
-            transitionOut: function (d) {
-                transition.fromScene.color = color;
-                transition.fromScene.fadeTo(1, duration, 
-                    ko.actionEase.sineInOut);
-            },
-            transitionIn: function (d) {
-                transition.fromScene = null;
-                transition.toScene = scene;
-                transition.toScene.position = { x: 0, y: 0};
-                transition.toScene.color = color;
-                transition.toScene.opacity = 1;
-                transition.toScene.fadeTo(0, duration, 
-                    ko.actionEase.sineInOut);
-            }
+        var transition = new ko.Transition(scene, duration, function () {
+            transition.fromScene.color = color;
+            transition.fromScene.fadeTo(1, duration, ko.actionEase.sineInOut);
+            transition.toScene.visible = false;
+        }, function () {
+            transition.fromScene.visible = false;
+            transition.toScene.position = { x: 0, y: 0 };
+            transition.toScene.color = color;
+            transition.toScene.opacity = 1;
+            transition.toScene.fadeTo(0, duration, ko.actionEase.sineInOut);
+            transition.toScene.visible = true;
         });
         this.scene = transition;
     };
-    Director.prototype.slideTo = function(scene, x, y, duration, ease) {
-        var _fromScene = this.scene;
-        var _toScene = scene;
-        var transition = new ko.Transition({
-            fromScene: _fromScene, 
-            toScene: _toScene, 
-            inDuration: duration, 
-            ease: ko.actionEase.sineInOut,
-            transitionIn: function (d) {
-                _fromScene.moveTo(x, y, duration, ease);
-                _toScene.position = { x: -x, y: -y };
-                _toScene.opacity = 0;
-                _toScene.moveTo(0, 0, duration, ease);
-            }
+    Director.prototype.slideTo = function(scene, x, y, duration, actionEase) {
+        var transition = new ko.Transition(scene, duration, function () {
+            transition.fromScene.visible = true;
+            transition.fromScene.moveTo(x, y, duration, actionEase);
+            transition.toScene.visible = true;
+            transition.toScene.position = { x: -x, y: -y };
+            transition.toScene.opacity = 0;
+            transition.toScene.moveTo(0, 0, duration, actionEase);
         });
         this.scene = transition;
     };

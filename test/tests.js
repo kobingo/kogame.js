@@ -546,35 +546,21 @@ test("scene - create", function () {
 test("transition - create", function () {
 	var sceneA = new ko.Scene();
 	var sceneB = new ko.Scene();
-	var transition = new ko.Transition({
-		fromScene: sceneA,
-		toScene: sceneB,
-		inDuration: 1
-	});
+	ko.director.scene = sceneA;
+	var transition = new ko.Transition(sceneB, 1);
 	ok(transition instanceof ko.Scene);
 });
 
-test("transition - create (should throw exception A)", function () {
+test("transition - create (should throw exception)", function () {
 	throws(
         function() {
-			var transition = new ko.Transition({});
+			var transition = new ko.Transition();
         },
-        /'fromScene' have not been specified when creating transition/
+        /'scene' have not been specified when creating transition/
     );
 });
 
-test("transition - create (should throw exception B)", function () {
-	throws(
-        function() {
-			var transition = new ko.Transition({
-				fromScene: new ko.Scene()
-			});
-        },
-        /Both 'inDuration' and 'outDuration' can not be empty when creating transition/
-    );
-});
-
-test("transition - update (with outDuration)", function () {
+test("transition - update", function () {
 	var sceneAUpdated = false;
 	var sceneBUpdated = false;
 	var sceneA = new ko.Scene({ 
@@ -587,55 +573,45 @@ test("transition - update (with outDuration)", function () {
 			sceneBUpdated = true;
 		}
 	});
-	var transition = new ko.Transition({
-		fromScene: sceneA,
-		toScene: sceneB,
-		outDuration: 1
-	});
+	ko.director.scene = sceneA;
+	var transition = new ko.Transition(sceneB, 1);
 	ko.director.scene = transition;
 	transition.update(0.1);
 	ok(ko.director.scene === transition);
-	transition.update(0.9);
-	ok(ko.director.scene === transition);
-	transition.update(0.1);
-	ok(ko.director.scene === sceneB);
-	ok(sceneAUpdated);
-	ok(sceneBUpdated);
-});
-
-test("transition - update (with outDuration and inDuration)", function () {
-	var sceneAUpdated = false;
-	var sceneBUpdated = false;
-	var sceneA = new ko.Scene({ 
-		update: function (delta) {
-			sceneAUpdated = true;
-		}
-	});
-	var sceneB = new ko.Scene({ 
-		update: function (delta) {
-			sceneBUpdated = true;
-		}
-	});
-	var transition = new ko.Transition({
-		fromScene: sceneA,
-		toScene: sceneB,
-		outDuration: 1,
-		inDuration: 1
-	});
-	ko.director.scene = transition;
-	transition.update(0.1);
-	equal(transition.state, ko.transitionState.OUT);
-	ok(ko.director.scene === transition);
 	transition.update(0.5);
-	ok(ko.director.scene === transition);
-	transition.update(0.5);
-	equal(transition.state, ko.transitionState.IN);
 	ok(ko.director.scene === transition);
 	transition.update(1);
-	equal(transition.state, ko.transitionState.COMPLETE);
 	ok(ko.director.scene === sceneB);
 	ok(sceneAUpdated);
 	ok(sceneBUpdated);
 });
 
+/* Popup */
+
+test("popup - create", function () {
+	var sceneA = new ko.Scene();
+	var sceneB = new ko.Scene();
+	ko.director.scene = sceneA;
+	var popup = new ko.Popup(sceneB, 1);
+	ok(popup instanceof ko.Scene);
+});
+
+test("popup - update", function () {
+	var sceneA = new ko.Scene();
+	var sceneB = new ko.Scene();
+	ko.director.scene = sceneA;
+	var popup = new ko.Popup(sceneB, 1);
+	ko.director.scene = popup;
+	popup.update(0.1);
+	popup.update(0.5);
+	ok(ko.director.scene === popup);
+	popup.update(0.5);
+	ok(ko.director.scene === popup);
+	popup.close();
+	popup.update(0.1);
+	popup.update(0.5);
+	ok(ko.director.scene === popup);
+	popup.update(0.5);
+	ok(ko.director.scene === sceneA);
+});
 

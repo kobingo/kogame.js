@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.4.5 - 2012-11-20
+/*! Kogame.js - v0.4.5 - 2012-11-21
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -321,8 +321,8 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Label = function (text, font) {
-        ko.Node.call(this);
+    ko.Label = function (text, font, args) {
+        ko.Node.call(this, args);
         this.setText(text);
         this.setFont(font);
         this._draw = function () {
@@ -393,9 +393,9 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Action = function (duration, ease) {
+    ko.Action = function (duration, actionEase) {
         this.duration = duration;
-        this.ease = ease;
+        this.actionEase = actionEase;
         this.value = 0;
         this.elapsed = 0;
     };
@@ -423,8 +423,8 @@ var ko = (function (ko) {
         if (this.elapsed > this.duration) {
             this.elapsed = this.duration;
         }
-        if (this.ease) {
-            this.value = this.ease(this.elapsed / this.duration);
+        if (this.actionEase) {
+            this.value = this.actionEase(this.elapsed / this.duration);
         } else {
             this.value = Math.max(0, Math.min(1, 
                 this.elapsed / this.duration));
@@ -440,8 +440,8 @@ var ko = (function (ko) {
         return this.elapsed >= this.duration;
     };
 
-    ko.MoveTo = function (x, y, duration, ease) {
-        ko.Action.call(this, duration, ease);
+    ko.MoveTo = function (x, y, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
         this.moveTo = { x: x, y: y };
     };
     ko.MoveTo.prototype = Object.create(ko.Action.prototype);
@@ -459,8 +459,8 @@ var ko = (function (ko) {
             ((this.moveTo.y - this.moveFrom.y) * this.value);
     };
 
-    ko.ScaleTo = function (scaleTo, duration, ease) {
-        ko.Action.call(this, duration, ease);
+    ko.ScaleTo = function (scaleTo, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
         this.scaleTo = scaleTo;
     };
     ko.ScaleTo.prototype = Object.create(ko.Action.prototype);
@@ -473,8 +473,8 @@ var ko = (function (ko) {
             ((this.scaleTo - this.scaleFrom) * this.value);
     };
 
-    ko.RotateTo = function (rotateTo, duration, ease) {
-        ko.Action.call(this, duration, ease);
+    ko.RotateTo = function (rotateTo, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
         this.rotateTo = rotateTo;
     };
     ko.RotateTo.prototype = Object.create(ko.Action.prototype);
@@ -487,8 +487,8 @@ var ko = (function (ko) {
             ((this.rotateTo - this.rotateFrom) * this.value);
     };
 
-    ko.FadeTo = function (fadeTo, duration, ease) {
-        ko.Action.call(this, duration, ease);
+    ko.FadeTo = function (fadeTo, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
         this.fadeTo = fadeTo;
     };
     ko.FadeTo.prototype = Object.create(ko.Action.prototype);
@@ -513,9 +513,13 @@ var ko = (function (ko) {
     };
     ko.Call.prototype = Object.create(ko.Action.prototype);
     ko.Call.prototype.perform = function () {
+        if (!this.func) {
+            return;
+        }
         this.func(this.args);
     };
 
+    // Ease functions based on code from http://www.cocos2d-iphone.org/
     ko.actionEase = {
         backIn: function (t) {
             var overshoot = 1.70158;
@@ -552,7 +556,7 @@ var ko = (function (ko) {
 
 var ko = (function (ko) {
     ko.Sequence = function (actions, repeatCount) {
-        this._actions = actions;
+        this.actions = actions;
         this.repeatCount = repeatCount;
         this.actionIndex = 0;
         this.repeatIndex = 0;
@@ -561,29 +565,28 @@ var ko = (function (ko) {
     ko.Sequence.prototype.init = function (target) {
         this.actionIndex = 0;
         this.repeatIndex = 0;
-        if (this._actions.length > 0) {
-            this._actions[0].init(target);
+        if (this.actions.length > 0) {
+            this.actions[0].init(target);
         }
         this.target = target;
     };
     ko.Sequence.prototype.update = function (delta) {
-        if (this._actions.length === 0) {
+        if (this.actions.length === 0) {
             return;
         }
         if (this.repeatIndex >= this.repeatCount) {
             return;
         }
-        var currentAction = this._actions[this.actionIndex];
+        var currentAction = this.actions[this.actionIndex];
         currentAction.update(delta);
         var durationIsZero;
         while (currentAction.isComplete()) {
-            var lastActionDuration = currentAction.duration;
             this.nextAction();
             // When we have repeated enough times we want to return immediatly
             if (this.repeatIndex >= this.repeatCount) {
                 return;
             }
-            currentAction = this._actions[this.actionIndex];
+            currentAction = this.actions[this.actionIndex];
             currentAction.init(this.target);
             if (!currentAction.duration) {
                 currentAction.update(delta);
@@ -598,38 +601,38 @@ var ko = (function (ko) {
     };
     ko.Sequence.prototype.nextAction = function () {
         this.actionIndex++;
-        if (this.actionIndex >= this._actions.length) {
+        if (this.actionIndex >= this.actions.length) {
             this.actionIndex = 0;
             this.repeatIndex++;
         }
-        this._actions[this.actionIndex].init(this.target);
+        this.actions[this.actionIndex].init(this.target);
     };
     ko.Sequence.prototype.action = function (action) {
-        this._actions.push(action);
+        this.actions.push(action);
         return this;
     };
     ko.Sequence.prototype.moveTo = function (x, y, duration, ease) {
-        this._actions.push(new ko.MoveTo(x, y, duration, ease));
+        this.actions.push(new ko.MoveTo(x, y, duration, ease));
         return this;
     };
     ko.Sequence.prototype.scaleTo = function (scaleTo, duration, ease) {
-        this._actions.push(new ko.ScaleTo(scaleTo, duration, ease));
+        this.actions.push(new ko.ScaleTo(scaleTo, duration, ease));
         return this;
     };
     ko.Sequence.prototype.rotateTo = function (rotateTo, duration, ease) {
-        this._actions.push(new ko.RotateTo(rotateTo, duration, ease));
+        this.actions.push(new ko.RotateTo(rotateTo, duration, ease));
         return this;
     };
     ko.Sequence.prototype.fadeTo = function (fadeTo, duration, ease) {
-        this._actions.push(new ko.FadeTo(fadeTo, duration, ease));
+        this.actions.push(new ko.FadeTo(fadeTo, duration, ease));
         return this;
     };
     ko.Sequence.prototype.wait = function (duration) {
-        this._actions.push(new ko.Wait(duration));
+        this.actions.push(new ko.Wait(duration));
         return this;
     };
     ko.Sequence.prototype.call = function (func, args) {
-        this._actions.push(new ko.Call(func, args));
+        this.actions.push(new ko.Call(func, args));
         return this;
     };
     return ko;
@@ -652,42 +655,28 @@ var ko = (function (ko) {
         this.scene.draw();
     };
     Director.prototype.fadeTo = function(scene, duration, color) {
-        var transition = new ko.Transition({
-            fromScene: this.scene, 
-            outDuration: duration, 
-            inDuration: duration, 
-            ease: ko.actionEase.sineInOut,
-            transitionOut: function (d) {
-                transition.fromScene.color = color;
-                transition.fromScene.fadeTo(1, duration, 
-                    ko.actionEase.sineInOut);
-            },
-            transitionIn: function (d) {
-                transition.fromScene = null;
-                transition.toScene = scene;
-                transition.toScene.position = { x: 0, y: 0};
-                transition.toScene.color = color;
-                transition.toScene.opacity = 1;
-                transition.toScene.fadeTo(0, duration, 
-                    ko.actionEase.sineInOut);
-            }
+        var transition = new ko.Transition(scene, duration, function () {
+            transition.fromScene.color = color;
+            transition.fromScene.fadeTo(1, duration, ko.actionEase.sineInOut);
+            transition.toScene.visible = false;
+        }, function () {
+            transition.fromScene.visible = false;
+            transition.toScene.position = { x: 0, y: 0 };
+            transition.toScene.color = color;
+            transition.toScene.opacity = 1;
+            transition.toScene.fadeTo(0, duration, ko.actionEase.sineInOut);
+            transition.toScene.visible = true;
         });
         this.scene = transition;
     };
-    Director.prototype.slideTo = function(scene, x, y, duration, ease) {
-        var _fromScene = this.scene;
-        var _toScene = scene;
-        var transition = new ko.Transition({
-            fromScene: _fromScene, 
-            toScene: _toScene, 
-            inDuration: duration, 
-            ease: ko.actionEase.sineInOut,
-            transitionIn: function (d) {
-                _fromScene.moveTo(x, y, duration, ease);
-                _toScene.position = { x: -x, y: -y };
-                _toScene.opacity = 0;
-                _toScene.moveTo(0, 0, duration, ease);
-            }
+    Director.prototype.slideTo = function(scene, x, y, duration, actionEase) {
+        var transition = new ko.Transition(scene, duration, function () {
+            transition.fromScene.visible = true;
+            transition.fromScene.moveTo(x, y, duration, actionEase);
+            transition.toScene.visible = true;
+            transition.toScene.position = { x: -x, y: -y };
+            transition.toScene.opacity = 0;
+            transition.toScene.moveTo(0, 0, duration, actionEase);
         });
         this.scene = transition;
     };
@@ -699,10 +688,14 @@ var ko = (function (ko) {
     ko.Scene = function (args) {
         ko.Node.call(this, args);
         this.centerAnchor();
+        this.color = 'rgb(0,0,0)';
         this.opacity = 0;
     };
     ko.Scene.prototype = Object.create(ko.Node.prototype);
     ko.Scene.prototype.draw = function () {
+		if (!this.visible) {
+			return;
+		}
 		ko.Node.prototype.draw.call(this);
 		ko.graphics.clear(this.color, this.opacity);
     };
@@ -710,43 +703,32 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Transition = function (args) {
-        args = args || {};
-        if (!args.fromScene) {
-            throw new Error("'fromScene' have not been specified when creating transition");
+    ko.Transition = 
+        function (scene, duration, transitionOut, transitionIn, wait) {
+        if (!scene) {
+            throw new Error("'scene' have not been specified when creating " +
+                "transition");
         }
-        if (!args.outDuration && !args.inDuration) {
-            throw new Error("Both 'inDuration' and 'outDuration' can not be empty when creating transition");
+        if (!ko.director.scene) {
+            throw new Error("'ko.director.scene' can not be empty when " +
+                "creating transition");
         }
         ko.Scene.call(this);
-        this.fromScene = args.fromScene;
-        this.toScene = args.toScene;
+        this.fromScene = ko.director.scene;
+        this.toScene = scene;
+        // The duration is meant to be specified as the total duration for the 
+        // transition. The duration is split up among transition-in/out.
+        duration = duration / 2;
         var self = this;
-        var transitionOut = new ko.Call(function () {
-            self.state = ko.transitionState.OUT;
-            if (args.transitionOut) {
-                args.transitionOut(self.outDuration);
-            }
-        });
-        var transitionIn = new ko.Call(function () {
-            self.state = ko.transitionState.IN;
-            if (args.transitionIn) {
-                args.transitionIn(self.inDuration);
-            }
-        });
         var transitionComplete = new ko.Call(function () {
-            if (!self.toScene) {
-                throw new Error("'toScene' must have been set when transition is complete");
-            }
             ko.director.scene = self.toScene;
-            self.state = ko.transitionState.COMPLETE;
         });
         this.sequence(1).
-            action(transitionOut).
-            wait(args.outDuration).
-            wait(args.waitDuration).
-            action(transitionIn).
-            wait(args.inDuration).
+            call(transitionOut).
+            wait(duration).
+            wait(wait).
+            call(transitionIn).
+            wait(duration).
             action(transitionComplete).
             init(this);
     };
@@ -769,27 +751,27 @@ var ko = (function (ko) {
             this.toScene.draw();
         }
     };
-    ko.transitionState = {
-        IN: 0,
-        OUT: 1,
-        COMPLETE: 2
-    };
-    ko.Popup = function (args) {
+    return ko;
+})(ko || {});
+
+var ko = (function (ko) {
+    ko.Popup = function (scene, duration, transitionOut, transitionIn) {
+        if (!scene) {
+            throw new Error("'scene' have not been specified when " + 
+                "creating popup");
+        }
+        if (!ko.director.scene) {
+            throw new Error("'ko.director.scene' can not be empty when " +
+                "creating popup");
+        }
         ko.Scene.call(this);
-        this.fromScene = args.fromScene;
-        this.toScene = args.toScene;
-        this.duration = args.duration;
-        this.transitionOut = args.transitionOut;
-        var self = this;
-        var transitionIn = new ko.Call(function () {
-            self.state = ko.transitionState.IN;
-            if (args.transitionIn) {
-                args.transitionIn(self.duration);
-            }
-        });
+        this.fromScene = ko.director.scene;
+        this.toScene = scene;
+        this.duration = duration;
+        this.transitionOut = transitionOut;
         this.sequence(1).
-            action(transitionIn).
-            wait(args.duration).
+            call(transitionIn).
+            wait(duration).
             init(this);
     };
     ko.Popup.prototype = Object.create(ko.Scene.prototype);
@@ -809,18 +791,11 @@ var ko = (function (ko) {
     };
     ko.Popup.prototype.close = function () {
         var self = this;
-        var transitionOut = new ko.Call(function () {
-            self.state = ko.transitionState.OUT;
-            if (self.transitionOut) {
-                self.transitionOut(self.duration);
-            }
-        });
         var transitionComplete = new ko.Call(function () {
-            self.state = ko.transitionState.COMPLETE;
             ko.director.scene = self.fromScene;
         });
         this.sequence(1).
-            action(transitionOut).
+            call(self.transitionOut).
             wait(this.duration).
             action(transitionComplete).
             init(this);

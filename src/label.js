@@ -1,6 +1,6 @@
 var ko = (function (ko) {
-    ko.Label = function (text, font) {
-        ko.Node.call(this);
+    ko.Label = function (text, font, args) {
+        ko.Node.call(this, args);
         this.setText(text);
         this.setFont(font);
         this._draw = function () {

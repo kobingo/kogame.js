@@ -1,7 +1,7 @@
 var ko = (function (ko) {
-    ko.Action = function (duration, ease) {
+    ko.Action = function (duration, actionEase) {
         this.duration = duration;
-        this.ease = ease;
+        this.actionEase = actionEase;
         this.value = 0;
         this.elapsed = 0;
     };
@@ -29,8 +29,8 @@ var ko = (function (ko) {
         if (this.elapsed > this.duration) {
             this.elapsed = this.duration;
         }
-        if (this.ease) {
-            this.value = this.ease(this.elapsed / this.duration);
+        if (this.actionEase) {
+            this.value = this.actionEase(this.elapsed / this.duration);
         } else {
             this.value = Math.max(0, Math.min(1, 
                 this.elapsed / this.duration));
@@ -46,8 +46,8 @@ var ko = (function (ko) {
         return this.elapsed >= this.duration;
     };
 
-    ko.MoveTo = function (x, y, duration, ease) {
-        ko.Action.call(this, duration, ease);
+    ko.MoveTo = function (x, y, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
         this.moveTo = { x: x, y: y };
     };
     ko.MoveTo.prototype = Object.create(ko.Action.prototype);
@@ -65,8 +65,8 @@ var ko = (function (ko) {
             ((this.moveTo.y - this.moveFrom.y) * this.value);
     };
 
-    ko.ScaleTo = function (scaleTo, duration, ease) {
-        ko.Action.call(this, duration, ease);
+    ko.ScaleTo = function (scaleTo, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
         this.scaleTo = scaleTo;
     };
     ko.ScaleTo.prototype = Object.create(ko.Action.prototype);
@@ -79,8 +79,8 @@ var ko = (function (ko) {
             ((this.scaleTo - this.scaleFrom) * this.value);
     };
 
-    ko.RotateTo = function (rotateTo, duration, ease) {
-        ko.Action.call(this, duration, ease);
+    ko.RotateTo = function (rotateTo, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
         this.rotateTo = rotateTo;
     };
     ko.RotateTo.prototype = Object.create(ko.Action.prototype);
@@ -93,8 +93,8 @@ var ko = (function (ko) {
             ((this.rotateTo - this.rotateFrom) * this.value);
     };
 
-    ko.FadeTo = function (fadeTo, duration, ease) {
-        ko.Action.call(this, duration, ease);
+    ko.FadeTo = function (fadeTo, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
         this.fadeTo = fadeTo;
     };
     ko.FadeTo.prototype = Object.create(ko.Action.prototype);
@@ -119,9 +119,13 @@ var ko = (function (ko) {
     };
     ko.Call.prototype = Object.create(ko.Action.prototype);
     ko.Call.prototype.perform = function () {
+        if (!this.func) {
+            return;
+        }
         this.func(this.args);
     };
 
+    // Ease functions based on code from http://www.cocos2d-iphone.org/
     ko.actionEase = {
         backIn: function (t) {
             var overshoot = 1.70158;

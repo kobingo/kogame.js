@@ -15,7 +15,8 @@ module.exports = function(grunt) {
     'src/sequence.js', 
     'src/director.js',
     'src/scene.js', 
-    'src/transition.js', 
+    'src/transition.js',
+    'src/popup.js', 
     'src/menu.js'
   ];
 
