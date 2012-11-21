@@ -28,7 +28,7 @@ then create a html file with the following markup.
         <script type="text/javascript">
             ko.game.init('game');
     
-            var center = ko.renderer.center;
+            var center = ko.graphics.center;
     
             var label = new ko.Label("Kogame.js", "48px Comic Sans MS");
             label.anchor = { x: 0.5, y: 0.5 };
