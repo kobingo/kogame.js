@@ -11,6 +11,7 @@ var ko = (function (ko) {
         this.anchor = { x: 0, y: 0 };
         this.size = { width: 0, height: 0 };
         this.visible = true;
+        this.active = true;
         this.children = [];
         this.actions = [];
         this._update = args.update || function (delta) {};
@@ -18,6 +19,9 @@ var ko = (function (ko) {
         this._draw = args.draw || function () {};
     };
     ko.Node.prototype.update = function (delta) {
+        if (!this.active) {
+            return;
+        }
         this.velocity.x += this.acceleration.x;
         this.velocity.y += this.acceleration.y;
         this.position.x += this.velocity.x;
@@ -28,6 +32,7 @@ var ko = (function (ko) {
         }
         for (i = this.actions.length - 1; i >= 0; i--) {
             if (this.actions[i].isComplete()) {
+                this.actions[i].target = null;
                 this.actions.splice(i, 1);
             }
         }
@@ -63,27 +68,35 @@ var ko = (function (ko) {
         this.children.push(child);
         child.parent = this;
     };
-    ko.Node.prototype.perform = function (action) {
+    ko.Node.prototype.performAction = function (action) {
         if (action.target) {
             throw new Error("Action is already in use");
         }
         action.init(this);
         this.actions.push(action);
     };
+    ko.Node.prototype.stopAction = function (action) {
+        var index = this.actions.indexOf(action);
+        if (index < 0) {
+            return;
+        }
+        this.actions[index].target = null;
+        this.actions.splice(index, 1);
+    };
     ko.Node.prototype.moveTo = function (x, y, duration, ease) {
-        this.perform(new ko.MoveTo(x, y, duration, ease));
+        this.performAction(new ko.MoveTo(x, y, duration, ease));
         return this;
     };
     ko.Node.prototype.scaleTo = function (scaleTo, duration, ease) {
-        this.perform(new ko.ScaleTo(scaleTo, duration, ease));
+        this.performAction(new ko.ScaleTo(scaleTo, duration, ease));
         return this;
     };
     ko.Node.prototype.rotateTo = function (rotateTo, duration, ease) {
-        this.perform(new ko.RotateTo(rotateTo, duration, ease));
+        this.performAction(new ko.RotateTo(rotateTo, duration, ease));
         return this;
     };
     ko.Node.prototype.fadeTo = function (fadeTo, duration, ease) {
-        this.perform(new ko.FadeTo(fadeTo, duration, ease));
+        this.performAction(new ko.FadeTo(fadeTo, duration, ease));
         return this;
     };
     ko.Node.prototype.sequence = function (repeat) {

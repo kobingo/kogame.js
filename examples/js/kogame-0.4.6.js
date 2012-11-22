@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.4.5 - 2012-11-21
+/*! Kogame.js - v0.4.6 - 2012-11-22
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -196,6 +196,7 @@ var ko = (function (ko) {
         this.anchor = { x: 0, y: 0 };
         this.size = { width: 0, height: 0 };
         this.visible = true;
+        this.active = true;
         this.children = [];
         this.actions = [];
         this._update = args.update || function (delta) {};
@@ -203,6 +204,9 @@ var ko = (function (ko) {
         this._draw = args.draw || function () {};
     };
     ko.Node.prototype.update = function (delta) {
+        if (!this.active) {
+            return;
+        }
         this.velocity.x += this.acceleration.x;
         this.velocity.y += this.acceleration.y;
         this.position.x += this.velocity.x;
@@ -213,6 +217,7 @@ var ko = (function (ko) {
         }
         for (i = this.actions.length - 1; i >= 0; i--) {
             if (this.actions[i].isComplete()) {
+                this.actions[i].target = null;
                 this.actions.splice(i, 1);
             }
         }
@@ -248,27 +253,35 @@ var ko = (function (ko) {
         this.children.push(child);
         child.parent = this;
     };
-    ko.Node.prototype.perform = function (action) {
+    ko.Node.prototype.performAction = function (action) {
         if (action.target) {
             throw new Error("Action is already in use");
         }
         action.init(this);
         this.actions.push(action);
     };
+    ko.Node.prototype.stopAction = function (action) {
+        var index = this.actions.indexOf(action);
+        if (index < 0) {
+            return;
+        }
+        this.actions[index].target = null;
+        this.actions.splice(index, 1);
+    };
     ko.Node.prototype.moveTo = function (x, y, duration, ease) {
-        this.perform(new ko.MoveTo(x, y, duration, ease));
+        this.performAction(new ko.MoveTo(x, y, duration, ease));
         return this;
     };
     ko.Node.prototype.scaleTo = function (scaleTo, duration, ease) {
-        this.perform(new ko.ScaleTo(scaleTo, duration, ease));
+        this.performAction(new ko.ScaleTo(scaleTo, duration, ease));
         return this;
     };
     ko.Node.prototype.rotateTo = function (rotateTo, duration, ease) {
-        this.perform(new ko.RotateTo(rotateTo, duration, ease));
+        this.performAction(new ko.RotateTo(rotateTo, duration, ease));
         return this;
     };
     ko.Node.prototype.fadeTo = function (fadeTo, duration, ease) {
-        this.perform(new ko.FadeTo(fadeTo, duration, ease));
+        this.performAction(new ko.FadeTo(fadeTo, duration, ease));
         return this;
     };
     ko.Node.prototype.sequence = function (repeat) {
@@ -556,7 +569,7 @@ var ko = (function (ko) {
 
 var ko = (function (ko) {
     ko.Sequence = function (actions, repeatCount) {
-        this.actions = actions;
+        this.actions = actions || [];
         this.repeatCount = repeatCount;
         this.actionIndex = 0;
         this.repeatIndex = 0;
@@ -655,21 +668,23 @@ var ko = (function (ko) {
         this.scene.draw();
     };
     Director.prototype.fadeTo = function(scene, duration, color) {
+        color = color || 'rgb(0,0,0)';
         var transition = new ko.Transition(scene, duration, function () {
             transition.fromScene.color = color;
-            transition.fromScene.fadeTo(1, duration, ko.actionEase.sineInOut);
+            transition.fromScene.fadeTo(1, duration / 2, ko.actionEase.sineInOut);
             transition.toScene.visible = false;
         }, function () {
             transition.fromScene.visible = false;
             transition.toScene.position = { x: 0, y: 0 };
             transition.toScene.color = color;
             transition.toScene.opacity = 1;
-            transition.toScene.fadeTo(0, duration, ko.actionEase.sineInOut);
+            transition.toScene.fadeTo(0, duration / 2, ko.actionEase.sineInOut);
             transition.toScene.visible = true;
         });
         this.scene = transition;
     };
     Director.prototype.slideTo = function(scene, x, y, duration, actionEase) {
+        actionEase = actionEase || ko.actionEase.sineInOut;
         var transition = new ko.Transition(scene, duration, function () {
             transition.fromScene.visible = true;
             transition.fromScene.moveTo(x, y, duration, actionEase);
@@ -731,6 +746,14 @@ var ko = (function (ko) {
             wait(duration).
             action(transitionComplete).
             init(this);
+        this._draw = function () {
+            if (this.fromScene) {
+                this.fromScene.draw();
+            }
+            if (this.toScene) {
+                this.toScene.draw();
+            }
+        };
     };
     ko.Transition.prototype = Object.create(ko.Scene.prototype);
     ko.Transition.prototype.update = function (delta) {
@@ -740,15 +763,6 @@ var ko = (function (ko) {
         }
         if (this.toScene) {
             this.toScene.update(delta);
-        }
-    };
-    ko.Transition.prototype.draw = function () {
-        ko.Scene.prototype.draw.call(this);
-        if (this.fromScene) {
-            this.fromScene.draw();
-        }
-        if (this.toScene) {
-            this.toScene.draw();
         }
     };
     return ko;
@@ -773,17 +787,16 @@ var ko = (function (ko) {
             call(transitionIn).
             wait(duration).
             init(this);
+        this._draw = function () {
+            this.fromScene.draw();
+            this.toScene.draw();
+        };
     };
     ko.Popup.prototype = Object.create(ko.Scene.prototype);
     ko.Popup.prototype.update = function (delta) {
         ko.Scene.prototype.update.call(this, delta);
         this.fromScene.update(delta);
         this.toScene.update(delta);
-    };
-    ko.Popup.prototype.draw = function () {
-        ko.Scene.prototype.draw.call(this);
-        this.fromScene.draw();
-        this.toScene.draw();
     };
     ko.Popup.prototype.handleInput = function () {
         ko.Scene.prototype.handleInput.call(this);

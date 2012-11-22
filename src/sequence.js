@@ -1,6 +1,6 @@
 var ko = (function (ko) {
     ko.Sequence = function (actions, repeatCount) {
-        this.actions = actions;
+        this.actions = actions || [];
         this.repeatCount = repeatCount;
         this.actionIndex = 0;
         this.repeatIndex = 0;

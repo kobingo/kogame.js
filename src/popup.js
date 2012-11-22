@@ -17,17 +17,16 @@ var ko = (function (ko) {
             call(transitionIn).
             wait(duration).
             init(this);
+        this._draw = function () {
+            this.fromScene.draw();
+            this.toScene.draw();
+        };
     };
     ko.Popup.prototype = Object.create(ko.Scene.prototype);
     ko.Popup.prototype.update = function (delta) {
         ko.Scene.prototype.update.call(this, delta);
         this.fromScene.update(delta);
         this.toScene.update(delta);
-    };
-    ko.Popup.prototype.draw = function () {
-        ko.Scene.prototype.draw.call(this);
-        this.fromScene.draw();
-        this.toScene.draw();
     };
     ko.Popup.prototype.handleInput = function () {
         ko.Scene.prototype.handleInput.call(this);

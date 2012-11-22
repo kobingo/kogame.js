@@ -27,6 +27,14 @@ var ko = (function (ko) {
             wait(duration).
             action(transitionComplete).
             init(this);
+        this._draw = function () {
+            if (this.fromScene) {
+                this.fromScene.draw();
+            }
+            if (this.toScene) {
+                this.toScene.draw();
+            }
+        };
     };
     ko.Transition.prototype = Object.create(ko.Scene.prototype);
     ko.Transition.prototype.update = function (delta) {
@@ -36,15 +44,6 @@ var ko = (function (ko) {
         }
         if (this.toScene) {
             this.toScene.update(delta);
-        }
-    };
-    ko.Transition.prototype.draw = function () {
-        ko.Scene.prototype.draw.call(this);
-        if (this.fromScene) {
-            this.fromScene.draw();
-        }
-        if (this.toScene) {
-            this.toScene.draw();
         }
     };
     return ko;

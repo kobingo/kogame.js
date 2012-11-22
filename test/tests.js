@@ -2,7 +2,7 @@
 
 var createNodeAndPerformAction = function (action) {
 	var node = new ko.Node();
-	node.perform(action);
+	node.performAction(action);
 	return node;
 };
 
@@ -59,12 +59,18 @@ test("node - create", function () {
 	equal(node.scale, 1);
 	equal(node.opacity, 1);
 	ok(node.visible);
+	ok(node.active);
 	equal(node.color, 'rgb(255,255,255)');
 	deepEqual(node.anchor, { x: 0, y: 0 });
 });
 
 test("node - update", function () {
-	var node = new ko.Node();
+	var updated = false;
+	var node = new ko.Node({
+		update: function (delta) {
+			updated = true;
+		}
+	});
 	node.acceleration = { x: 1, y: 1 };
 	node.update(1);
 	deepEqual(node.velocity, { x: 1, y: 1 });
@@ -72,6 +78,15 @@ test("node - update", function () {
 	node.update(1);
 	deepEqual(node.velocity, { x: 2, y: 2 });
 	deepEqual(node.position, { x: 3, y: 3 });
+	ok(updated);
+});
+
+test("node - update (active = false)", function () {
+	var node = new ko.Node();
+	node.active = false;
+	node.acceleration = { x: 1, y: 1 };
+	node.update(1);
+	deepEqual(node.position, { x: 0, y: 0 });
 });
 
 test("node - update children", function () {
@@ -107,6 +122,24 @@ test("node - add child (should throw exception B)", function () {
         },
         /Child already has a parent/
     );
+});
+
+test("node - perform action", function () {
+	var node = new ko.Node();
+    var action = new ko.Action(1);
+    node.performAction(action);
+    equal(1, node.actions.length);
+    node.update(1);
+    equal(0, node.actions.length);
+});
+
+test("node - stop action", function () {
+	var node = new ko.Node();
+    var action = new ko.Action(1);
+    node.performAction(action);
+    equal(1, node.actions.length);
+    node.stopAction(action);
+    equal(0, node.actions.length);
 });
 
 test("node - move to", function () {
@@ -162,6 +195,12 @@ test("node - center anchor", function () {
 	deepEqual(node.anchor, { x: 0, y: 0 });
 	node.centerAnchor();
 	deepEqual(node.anchor, { x: 0.5, y: 0.5 });
+});
+
+test("node - center position", function () {
+	var node = new ko.Node();
+	node.centerPosition();
+	deepEqual(node.position, { x: 384, y: 216 });
 });
 
 /* Sprite */
@@ -539,6 +578,23 @@ test("director - update scene", function () {
 test("scene - create", function () {
 	var scene = new ko.Scene();
 	ok(scene instanceof ko.Node);
+});
+
+test("scene - fade to", function () {
+	expect(2);
+	var temp = ko.graphics.clear;
+	// Mock the graphics clear function
+	ko.graphics.clear = function (color, opacity) {
+		equal(0.25, opacity);
+		equal('rgb(100,100,100)', color);
+	};
+	var scene = new ko.Scene();
+	scene.color = 'rgb(100,100,100)';
+	scene.fadeTo(0.5, 1);
+	scene.update(0.5);
+	scene.draw();
+	// Reset to original function
+	ko.graphics.clear = temp;
 });
 
 /* Transition */
