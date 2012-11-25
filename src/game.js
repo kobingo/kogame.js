@@ -1,20 +1,42 @@
 var ko = (function (ko) {
     /*global window*/
-    var _animationFrame =
+    var requestAnimationFrame =
         window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
         window.mozRequestAnimationFrame ||
         window.oRequestAnimationFrame ||
-        window.msRequestAnimationFrame;
-    var lastTime = Date.now();
-    var _animate = function () {
-        var currentTime = Date.now();
-        var elapsedTime = currentTime - lastTime;
+        window.msRequestAnimationFrame ||
+        function (callback) {
+            // For browsers that doesn't support requestAnimationFrame
+            window.setTimeout(callback, 1000 / 60);
+        };
+    var performance = window.performance || {};
+    performance.now = 
+        performance.now ||
+        performance.webkitNow ||
+        performance.mozNow ||
+        performance.oNow ||
+        performance.msNow ||
+        function () {
+            // For browsers that doesn't support performance.now
+            return new Date().getTime();
+        };
+    var lastTime = performance.now();
+    var timeAccumulator = 0;
+    var tick = function () {
+        var currentTime = performance.now();
+        var frameTime = currentTime - lastTime;
         lastTime = currentTime;
-        ko.game.update(elapsedTime * 0.001);
-        _animationFrame(_animate);
+        timeAccumulator += frameTime;
+        while (timeAccumulator >= ko.game.targetDelta) {
+            ko.game.update(ko.game.targetDelta * 0.001);
+            timeAccumulator -= ko.game.targetDelta;
+        }
+        ko.game.draw();
+        requestAnimationFrame(tick);
     };
     var Game = function () {
+        this.targetDelta = 1000 / 60;
     };
     Game.prototype.init = function (canvasId) {
         /*global document*/
@@ -30,14 +52,16 @@ var ko = (function (ko) {
             throw new Error("Game has not been initialized");
         }
         ko.director.scene = scene;
-        _animationFrame(_animate);
+        requestAnimationFrame(tick);
     };
     Game.prototype.update = function (delta) {
         ko.director.update(delta);
-        ko.graphics.clear();
-        ko.director.draw();
         ko.keyboard.update();
         ko.mouse.update();
+    };
+    Game.prototype.draw = function () {
+        ko.graphics.clear();
+        ko.director.draw();
     };
     ko.game = new Game();
     return ko;
