@@ -17,7 +17,8 @@ module.exports = function(grunt) {
     'src/scene.js', 
     'src/transition.js',
     'src/popup.js', 
-    'src/menu.js'
+    'src/menu.js',
+    'src/audio.js'
   ];
 
   // Project configuration.

@@ -1,10 +1,12 @@
 var ko = (function (ko) {
-    var isButtonDown;
-    var wasButtonPressed;
-    var Mouse = function () {
+    var buttonDown;
+    var buttonPressed;
+    ko.Mouse = function () {
         var self = this;
         this.position = { x: 0, y: 0 };
+        this.local = { x: 0, y: 0 };
         this.moved = { x: 0, y: 0 };
+        this.hasEntered = false;
         /*global window*/
         window.addEventListener('mousemove', function (event) {
             if (self.position.x !== 0) {
@@ -13,30 +15,43 @@ var ko = (function (ko) {
             if (self.position.y !== 0) {
                 self.moved.y = event.offsetY - self.position.y;
             }
-            self.position.x = event.offsetX;
-            self.position.y = event.offsetY;
+            self.position.x = event.clientX;
+            self.position.y = event.clientY;
         }, false);
         window.addEventListener('mousedown', function (event) {
-            if (!isButtonDown) {
-                wasButtonPressed = true;
+            if (!buttonDown) {
+                buttonPressed = true;
             }
-            isButtonDown = true;
+            buttonDown = true;
         }, false);
         window.addEventListener('mouseup', function (event) {
-            isButtonDown = false;
+            buttonDown = false;
         }, false);
     };
-    Mouse.prototype.update = function () {
+    ko.Mouse.prototype.init = function (canvas) {
+        var self = this;
+        canvas.addEventListener('mousemove', function (event) {
+            self.local.x = event.offsetX;
+            self.local.y = event.offsetY;
+        }, false);
+        canvas.addEventListener('mouseover', function (event) {
+            self.hasEntered = true;
+        }, false);
+        canvas.addEventListener('mouseout', function (event) {
+            self.hasEntered = false;
+        }, false);
+    };
+    ko.Mouse.prototype.update = function () {
         this.moved.x = 0;
         this.moved.y = 0;
-        wasButtonPressed = false;
+        buttonPressed = false;
     };
-    Mouse.prototype.isButtonDown = function () {
-        return isButtonDown;
+    ko.Mouse.prototype.isButtonDown = function () {
+        return buttonDown;
     };
-    Mouse.prototype.wasButtonPressed = function () {
-        return wasButtonPressed;
+    ko.Mouse.prototype.wasButtonPressed = function () {
+        return buttonPressed;
     };
-    ko.mouse = new Mouse();
+    ko.mouse = new ko.Mouse();
     return ko;
 })(ko || {});

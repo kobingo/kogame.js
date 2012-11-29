@@ -1,8 +1,9 @@
 var ko = (function (ko) {
-    ko.Graphics2D = function (canvas) {
+    ko.Graphics2D = function () {
+    };
+    ko.Graphics2D.prototype.init = function (canvas) {
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
-        this.clearColor = 'rgb(100, 149, 237)';
         this.size = { width: canvas.width, height: canvas.height };
         this.center = { x: canvas.width / 2, y: canvas.height / 2};
     };
@@ -11,7 +12,7 @@ var ko = (function (ko) {
             opacity = 1;
         }
         this.context.globalAlpha = opacity;
-        this.context.fillStyle = color || this.clearColor;
+        this.context.fillStyle = color || 'rgb(100, 149, 237)';
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
     ko.Graphics2D.prototype.beginTransform = function (node) {
@@ -47,5 +48,6 @@ var ko = (function (ko) {
         var textMetrics = this.context.measureText(label.text);
         return { width: textMetrics.width, height: 0 };
     };
+    ko.graphics = new ko.Graphics2D();
     return ko;
 })(ko || {});

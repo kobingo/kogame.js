@@ -2,7 +2,7 @@
   "title": "Kogame.js",
   "name": "kogame",
   "description": "Framework for creating games with HTML5 and JavaScript",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "homepage": "https://github.com/kobingo/kogame.js",
   "author": {
     "name": "Jens Andersson",

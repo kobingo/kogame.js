@@ -203,6 +203,13 @@ test("node - center position", function () {
 	deepEqual(node.position, { x: 384, y: 216 });
 });
 
+test("node - set position", function () {
+	var node = new ko.Node();
+	var position = { x: 245, y: 873 };
+	node.setPosition(position);
+	deepEqual(node.position, position);
+});
+
 /* Sprite */
 
 test("sprite - create (with image)", function () {

@@ -113,6 +113,9 @@ var ko = (function (ko) {
         }
         return this.boundingBox.isIntersecting(node.boundingBox, separate);
     };
+    ko.Node.prototype.setPosition = function (position) {
+        this.position = { x: position.x, y: position.y };
+    };
     ko.Node.prototype.centerPosition = function () {
         var center = ko.graphics.center;
         this.position = { x: center.x, y: center.y };

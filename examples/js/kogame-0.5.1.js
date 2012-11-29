@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.5.0 - 2012-11-25
+/*! Kogame.js - v0.5.1 - 2012-11-29
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -48,7 +48,8 @@ var ko = (function (ko) {
         if (!canvas) {
             throw new Error("Couldn't find canvas '" + canvasId + "'");
         }
-        ko.graphics = new ko.Graphics2D(canvas);
+        ko.graphics.init(canvas);
+        ko.mouse.init(canvas);
         this.initialized = true;
     };
     Game.prototype.run = function (scene) {
@@ -62,6 +63,7 @@ var ko = (function (ko) {
         ko.director.update(delta);
         ko.keyboard.update();
         ko.mouse.update();
+        ko.audio.update(delta);
     };
     Game.prototype.draw = function () {
         ko.graphics.clear();
@@ -113,12 +115,14 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    var isButtonDown;
-    var wasButtonPressed;
-    var Mouse = function () {
+    var buttonDown;
+    var buttonPressed;
+    ko.Mouse = function () {
         var self = this;
         this.position = { x: 0, y: 0 };
+        this.local = { x: 0, y: 0 };
         this.moved = { x: 0, y: 0 };
+        this.hasEntered = false;
         /*global window*/
         window.addEventListener('mousemove', function (event) {
             if (self.position.x !== 0) {
@@ -127,39 +131,53 @@ var ko = (function (ko) {
             if (self.position.y !== 0) {
                 self.moved.y = event.offsetY - self.position.y;
             }
-            self.position.x = event.offsetX;
-            self.position.y = event.offsetY;
+            self.position.x = event.clientX;
+            self.position.y = event.clientY;
         }, false);
         window.addEventListener('mousedown', function (event) {
-            if (!isButtonDown) {
-                wasButtonPressed = true;
+            if (!buttonDown) {
+                buttonPressed = true;
             }
-            isButtonDown = true;
+            buttonDown = true;
         }, false);
         window.addEventListener('mouseup', function (event) {
-            isButtonDown = false;
+            buttonDown = false;
         }, false);
     };
-    Mouse.prototype.update = function () {
+    ko.Mouse.prototype.init = function (canvas) {
+        var self = this;
+        canvas.addEventListener('mousemove', function (event) {
+            self.local.x = event.offsetX;
+            self.local.y = event.offsetY;
+        }, false);
+        canvas.addEventListener('mouseover', function (event) {
+            self.hasEntered = true;
+        }, false);
+        canvas.addEventListener('mouseout', function (event) {
+            self.hasEntered = false;
+        }, false);
+    };
+    ko.Mouse.prototype.update = function () {
         this.moved.x = 0;
         this.moved.y = 0;
-        wasButtonPressed = false;
+        buttonPressed = false;
     };
-    Mouse.prototype.isButtonDown = function () {
-        return isButtonDown;
+    ko.Mouse.prototype.isButtonDown = function () {
+        return buttonDown;
     };
-    Mouse.prototype.wasButtonPressed = function () {
-        return wasButtonPressed;
+    ko.Mouse.prototype.wasButtonPressed = function () {
+        return buttonPressed;
     };
-    ko.mouse = new Mouse();
+    ko.mouse = new ko.Mouse();
     return ko;
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Graphics2D = function (canvas) {
+    ko.Graphics2D = function () {
+    };
+    ko.Graphics2D.prototype.init = function (canvas) {
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
-        this.clearColor = 'rgb(100, 149, 237)';
         this.size = { width: canvas.width, height: canvas.height };
         this.center = { x: canvas.width / 2, y: canvas.height / 2};
     };
@@ -168,7 +186,7 @@ var ko = (function (ko) {
             opacity = 1;
         }
         this.context.globalAlpha = opacity;
-        this.context.fillStyle = color || this.clearColor;
+        this.context.fillStyle = color || 'rgb(100, 149, 237)';
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
     ko.Graphics2D.prototype.beginTransform = function (node) {
@@ -187,9 +205,6 @@ var ko = (function (ko) {
             node.anchor.y * -node.size.height, node.size.width, 
             node.size.height);
     };
-    ko.Graphics2D.prototype.drawImage = function (image, x, y) {
-        this.context.drawImage(image, x, y);
-    };
     ko.Graphics2D.prototype.drawSprite = function (sprite) {
         this.context.globalAlpha = sprite.opacity;
         this.context.drawImage(sprite.image, sprite.anchor.x * 
@@ -207,6 +222,7 @@ var ko = (function (ko) {
         var textMetrics = this.context.measureText(label.text);
         return { width: textMetrics.width, height: 0 };
     };
+    ko.graphics = new ko.Graphics2D();
     return ko;
 })(ko || {});
 
@@ -324,6 +340,9 @@ var ko = (function (ko) {
             node.boundingBox = new ko.BoundingBox(node);
         }
         return this.boundingBox.isIntersecting(node.boundingBox, separate);
+    };
+    ko.Node.prototype.setPosition = function (position) {
+        this.position = { x: position.x, y: position.y };
     };
     ko.Node.prototype.centerPosition = function () {
         var center = ko.graphics.center;
@@ -916,5 +935,76 @@ var ko = (function (ko) {
         }
         this.itemSelected();
     };
+    return ko;
+})(ko || {});
+
+var ko = (function (ko) {
+    /*global Audio*/
+    ko.Audio = function () {
+        this.sounds = [];
+    };
+    ko.Audio.prototype.playSound = function(url, volume, id) {
+        var sound = new Audio(url);
+        sound.id = id;
+        sound.volume = volume || 1;
+        sound.play();
+        this.sounds.push(sound);
+    };
+    ko.Audio.prototype.playMusic = function(url, volume) {
+        this.music = new Audio(url);
+        this.music.volume = volume || 1;
+        this.music.play();
+    };
+    ko.Audio.prototype.stopSound = function(id) {
+        if (id === undefined) {
+            throw new Error("Must specify 'id' when stopping a sound.");
+        }
+        for (var i = 0; i < this.sounds.length; i++) {
+            if (this.sounds[i].id === id) {
+                this.sounds[i].pause();
+                this.sounds.splice(i, 1);
+                break;
+            }
+        }
+    };
+    ko.Audio.prototype.stopMusic = function() {
+        if (!this.music) {
+            throw new Error("Can't stop music before music has been played.");
+        }
+        this.music.pause();
+    };
+    ko.Audio.prototype.stopAllSounds = function() {
+        for (var i = this.sounds.length - 1; i >= 0; i--) {
+            this.sounds[i].pause();
+            this.sounds.splice(i, 1);
+        }
+    };
+    ko.Audio.prototype.fadeMusic = function(volume, duration) {
+        if (!this.music) {
+            throw new Error("Can't fade music before music has been played.");
+        }
+        this.fadeFrom = this.music.volume;
+        this.fadeTo = volume;
+        this.fadeAction = new ko.Action(duration || 1);
+        this.fadeAction.init(this);
+    };
+    ko.Audio.prototype.isMusicPlaying = function() {
+        if (!this.music) {
+            return false;
+        }
+        return !this.music.paused;
+    };
+    ko.Audio.prototype.update = function(delta) {
+        if (!this.fadeAction) {
+            return;
+        }
+        this.fadeAction.update(delta);
+        this.music.volume = this.fadeFrom + ((this.fadeTo - this.fadeFrom) * 
+            this.fadeAction.value);
+        if (this.fadeAction.isComplete()) {
+            delete this.fadeAction;
+        }
+    };
+    ko.audio = new ko.Audio();
     return ko;
 })(ko || {});
