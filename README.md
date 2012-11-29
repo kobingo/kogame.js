@@ -13,7 +13,7 @@ Features
 
 Getting started
 ---------------
-Download the latest version of [Kogame.js](https://raw.github.com/kobingo/kogame.js/master/kogame-0.5.0.js) 
+Download the latest version of [Kogame.js](https://raw.github.com/kobingo/kogame.js/master/kogame-0.5.1.js) 
 then create a html file with the following markup.
 
     <!DOCTYPE html>
