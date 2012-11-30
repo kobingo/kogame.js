@@ -3,16 +3,18 @@ var ko = (function (ko) {
     ko.Audio = function () {
         this.sounds = [];
     };
-    ko.Audio.prototype.playSound = function(url, volume, id) {
+    ko.Audio.prototype.playSound = function(url, loop, id, volume) {
         var sound = new Audio(url);
         sound.id = id;
         sound.volume = volume || 1;
+        sound.loop = loop;
         sound.play();
         this.sounds.push(sound);
     };
-    ko.Audio.prototype.playMusic = function(url, volume) {
+    ko.Audio.prototype.playMusic = function(url, loop, volume) {
         this.music = new Audio(url);
         this.music.volume = volume || 1;
+        this.music.loop = loop;
         this.music.play();
     };
     ko.Audio.prototype.stopSound = function(id) {
