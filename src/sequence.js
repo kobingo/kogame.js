@@ -59,16 +59,32 @@ var ko = (function (ko) {
         this.actions.push(new ko.MoveTo(x, y, duration, ease));
         return this;
     };
+    ko.Sequence.prototype.moveBy = function (x, y, duration, ease) {
+        this.actions.push(new ko.MoveBy(x, y, duration, ease));
+        return this;
+    };
     ko.Sequence.prototype.scaleTo = function (scaleTo, duration, ease) {
         this.actions.push(new ko.ScaleTo(scaleTo, duration, ease));
+        return this;
+    };
+    ko.Sequence.prototype.scaleBy = function (scaleBy, duration, ease) {
+        this.actions.push(new ko.ScaleBy(scaleBy, duration, ease));
         return this;
     };
     ko.Sequence.prototype.rotateTo = function (rotateTo, duration, ease) {
         this.actions.push(new ko.RotateTo(rotateTo, duration, ease));
         return this;
     };
+    ko.Sequence.prototype.rotateBy = function (rotateBy, duration, ease) {
+        this.actions.push(new ko.RotateBy(rotateBy, duration, ease));
+        return this;
+    };
     ko.Sequence.prototype.fadeTo = function (fadeTo, duration, ease) {
         this.actions.push(new ko.FadeTo(fadeTo, duration, ease));
+        return this;
+    };
+    ko.Sequence.prototype.fadeBy = function (fadeBy, duration, ease) {
+        this.actions.push(new ko.FadeBy(fadeBy, duration, ease));
         return this;
     };
     ko.Sequence.prototype.wait = function (duration) {

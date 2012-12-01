@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.5.1 - 2012-11-29
+/*! Kogame.js - v0.5.1 - 2012-12-01
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -315,16 +315,32 @@ var ko = (function (ko) {
         this.performAction(new ko.MoveTo(x, y, duration, ease));
         return this;
     };
+    ko.Node.prototype.moveBy = function (x, y, duration, ease) {
+        this.performAction(new ko.MoveBy(x, y, duration, ease));
+        return this;
+    };
     ko.Node.prototype.scaleTo = function (scaleTo, duration, ease) {
         this.performAction(new ko.ScaleTo(scaleTo, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.scaleBy = function (scaleBy, duration, ease) {
+        this.performAction(new ko.ScaleBy(scaleBy, duration, ease));
         return this;
     };
     ko.Node.prototype.rotateTo = function (rotateTo, duration, ease) {
         this.performAction(new ko.RotateTo(rotateTo, duration, ease));
         return this;
     };
+    ko.Node.prototype.rotateBy = function (rotateBy, duration, ease) {
+        this.performAction(new ko.RotateBy(rotateBy, duration, ease));
+        return this;
+    };
     ko.Node.prototype.fadeTo = function (fadeTo, duration, ease) {
         this.performAction(new ko.FadeTo(fadeTo, duration, ease));
+        return this;
+    };
+    ko.Node.prototype.fadeBy = function (fadeBy, duration, ease) {
+        this.performAction(new ko.FadeBy(fadeBy, duration, ease));
         return this;
     };
     ko.Node.prototype.sequence = function (repeat) {
@@ -498,7 +514,6 @@ var ko = (function (ko) {
         }
         return this.elapsed >= this.duration;
     };
-
     ko.MoveTo = function (x, y, duration, actionEase) {
         ko.Action.call(this, duration, actionEase);
         this.moveTo = { x: x, y: y };
@@ -517,7 +532,22 @@ var ko = (function (ko) {
         this.target.position.y = this.moveFrom.y + 
             ((this.moveTo.y - this.moveFrom.y) * this.value);
     };
-
+    ko.MoveBy = function (x, y, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
+        this.moveBy = { x: x, y: y };
+    };
+    ko.MoveBy.prototype = Object.create(ko.Action.prototype);
+    ko.MoveBy.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.moveFrom = { 
+            x: target.position.x, 
+            y: target.position.y 
+        };
+    };
+    ko.MoveBy.prototype.perform = function () {
+        this.target.position.x = this.moveFrom.x + this.moveBy.x * this.value;
+        this.target.position.y = this.moveFrom.y + this.moveBy.y * this.value;
+    };
     ko.ScaleTo = function (scaleTo, duration, actionEase) {
         ko.Action.call(this, duration, actionEase);
         this.scaleTo = scaleTo;
@@ -531,7 +561,18 @@ var ko = (function (ko) {
         this.target.scale = this.scaleFrom + 
             ((this.scaleTo - this.scaleFrom) * this.value);
     };
-
+    ko.ScaleBy = function (scaleBy, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
+        this.scaleBy = scaleBy;
+    };
+    ko.ScaleBy.prototype = Object.create(ko.Action.prototype);
+    ko.ScaleBy.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.scaleFrom = target.scale;
+    };
+    ko.ScaleBy.prototype.perform = function () {
+        this.target.scale = this.scaleFrom + this.scaleBy * this.value;
+    };
     ko.RotateTo = function (rotateTo, duration, actionEase) {
         ko.Action.call(this, duration, actionEase);
         this.rotateTo = rotateTo;
@@ -545,7 +586,18 @@ var ko = (function (ko) {
         this.target.rotation = this.rotateFrom + 
             ((this.rotateTo - this.rotateFrom) * this.value);
     };
-
+    ko.RotateBy = function (rotateBy, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
+        this.rotateBy = rotateBy;
+    };
+    ko.RotateBy.prototype = Object.create(ko.Action.prototype);
+    ko.RotateBy.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.rotateFrom = target.rotation;
+    };
+    ko.RotateBy.prototype.perform = function () {
+        this.target.rotation = this.rotateFrom + this.rotateBy * this.value;
+    };
     ko.FadeTo = function (fadeTo, duration, actionEase) {
         ko.Action.call(this, duration, actionEase);
         this.fadeTo = fadeTo;
@@ -559,12 +611,22 @@ var ko = (function (ko) {
         this.target.opacity = this.fadeFrom + 
             ((this.fadeTo - this.fadeFrom) * this.value);
     };
-
+    ko.FadeBy = function (fadeBy, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
+        this.fadeBy = fadeBy;
+    };
+    ko.FadeBy.prototype = Object.create(ko.Action.prototype);
+    ko.FadeBy.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.fadeFrom = target.opacity;
+    };
+    ko.FadeBy.prototype.perform = function () {
+        this.target.opacity = this.fadeFrom + this.fadeBy * this.value;
+    };
     ko.Wait = function (duration) {
         ko.Action.call(this, duration);
     };
     ko.Wait.prototype = Object.create(ko.Action.prototype);
-
     ko.Call = function (func, args) {
         ko.Action.call(this, 0);
         this.func = func;
@@ -577,7 +639,6 @@ var ko = (function (ko) {
         }
         this.func(this.args);
     };
-
     // Ease functions based on code from http://www.cocos2d-iphone.org/
     ko.actionEase = {
         backIn: function (t) {
@@ -609,7 +670,6 @@ var ko = (function (ko) {
             return -0.5 * (Math.cos(Math.PI * t) - 1);
         }
     };
-
     return ko;
 })(ko || {});
 
@@ -674,16 +734,32 @@ var ko = (function (ko) {
         this.actions.push(new ko.MoveTo(x, y, duration, ease));
         return this;
     };
+    ko.Sequence.prototype.moveBy = function (x, y, duration, ease) {
+        this.actions.push(new ko.MoveBy(x, y, duration, ease));
+        return this;
+    };
     ko.Sequence.prototype.scaleTo = function (scaleTo, duration, ease) {
         this.actions.push(new ko.ScaleTo(scaleTo, duration, ease));
+        return this;
+    };
+    ko.Sequence.prototype.scaleBy = function (scaleBy, duration, ease) {
+        this.actions.push(new ko.ScaleBy(scaleBy, duration, ease));
         return this;
     };
     ko.Sequence.prototype.rotateTo = function (rotateTo, duration, ease) {
         this.actions.push(new ko.RotateTo(rotateTo, duration, ease));
         return this;
     };
+    ko.Sequence.prototype.rotateBy = function (rotateBy, duration, ease) {
+        this.actions.push(new ko.RotateBy(rotateBy, duration, ease));
+        return this;
+    };
     ko.Sequence.prototype.fadeTo = function (fadeTo, duration, ease) {
         this.actions.push(new ko.FadeTo(fadeTo, duration, ease));
+        return this;
+    };
+    ko.Sequence.prototype.fadeBy = function (fadeBy, duration, ease) {
+        this.actions.push(new ko.FadeBy(fadeBy, duration, ease));
         return this;
     };
     ko.Sequence.prototype.wait = function (duration) {
@@ -864,6 +940,9 @@ var ko = (function (ko) {
 
 var ko = (function (ko) {
     ko.Menu = function (fontSize, fontName, items) {
+        if (!items) {
+            throw new Error("Can't create menu without any items.");
+        }
         ko.Node.call(this);
         this.itemColor = 'rgb(255,255,255)';
         this.selectedItemColor = 'rgb(255,215,0)';
@@ -871,69 +950,78 @@ var ko = (function (ko) {
         this.spacing = 10;
         this.fontSize = fontSize;
         this.font = fontSize + "px " + fontName;
-        this._items = items;
+        this.items = items;
         this.createLabels();
         this.alignItemsCenter();
     };
     ko.Menu.prototype = Object.create(ko.Node.prototype);
     ko.Menu.prototype.update = function (delta) {
         ko.Node.prototype.update.call(this, delta);
-        for (var i = 0; i < this._labels.length; i++) {
-            this._labels[i].color = i === this.selectedItemIndex ? 
+        for (var i = 0; i < this.labels.length; i++) {
+            this.labels[i].color = i === this.selectedItemIndex ? 
                 this.selectedItemColor : this.itemColor;
         }
     };
     ko.Menu.prototype.handleInput = function () {
         if (ko.keyboard.wasKeyHeld(ko.keyboard.UP)) {
-            this.prevItem();
-        } 
-        else if (ko.keyboard.wasKeyHeld(ko.keyboard.DOWN)) {
-            this.nextItem();
+            this.selectPreviousItem();
+        }
+        if (ko.keyboard.wasKeyHeld(ko.keyboard.DOWN)) {
+            this.selectNextItem();
         }
         if (ko.keyboard.wasKeyPressed(ko.keyboard.ENTER)) {
-            this.selectItem();
+            this.chooseSelectedItem();
         }
     };
     ko.Menu.prototype.createLabels = function () {
-        this._labels = [];
-        for (var i = 0; i < this._items.length; i++) {
-            var label = new ko.Label(this._items[i], this.font);
-            this._labels.push(label);
+        this.labels = [];
+        for (var i = 0; i < this.items.length; i++) {
+            var label = new ko.Label(this.items[i], this.font);
+            this.labels.push(label);
             this.addChild(label);
         }
     };
     ko.Menu.prototype.alignItemsCenter = function () {
         var self = this;
-        var _calcPosition = function (i) {
-            var c = self._labels.length - 1;
+        var calculatePosition = function (i) {
+            var c = self.labels.length - 1;
             var s = self.spacing;
             var f = self.fontSize;
             return -(c * f + c * s) / 2 + (f + s) * i;
         };
-        for (var i = 0; i < this._items.length; i++) {
-            this._labels[i].position = { x: 0, y: _calcPosition(i) };
-            this._labels[i].anchor = { x: 0.5, y: 0.5 };
+        for (var i = 0; i < this.items.length; i++) {
+            this.labels[i].position.y = calculatePosition(i);
+            this.labels[i].centerAnchor();
         }
-        this.position = { 
-            x: ko.graphics.size.width / 2, 
-            y: ko.graphics.size.height / 2
-        };
+        this.setPosition(ko.graphics.center);
     };
-    ko.Menu.prototype.nextItem = function () {
-        if (this.selectedItemIndex < this._items.length - 1) {
+    ko.Menu.prototype.selectNextItem = function () {
+        if (this.selectedItemIndex < this.items.length - 1) {
             this.selectedItemIndex++;
+            this.selectedItemChanged();
         }
     };
-    ko.Menu.prototype.prevItem = function () {
+    ko.Menu.prototype.selectPreviousItem = function () {
         if (this.selectedItemIndex > 0) {
             this.selectedItemIndex--;
+            this.selectedItemChanged();
         }
     };
-    ko.Menu.prototype.selectItem = function () {
-        if (!this.itemSelected) {
+    ko.Menu.prototype.selectedItemChanged = function () {
+        for (var i = 0; i < this.items.length; i++) {
+            if (i === this.selectedItemIndex) {
+                continue;
+            }
+            this.labels[i].scaleTo(1, 0.1, ko.actionEase.sineInOut);
+        }
+        this.labels[this.selectedItemIndex].scaleTo(1.1, 0.1, 
+            ko.actionEase.sineInOut);
+    };
+    ko.Menu.prototype.chooseSelectedItem = function () {
+        if (!this.onSelectedItemChosen) {
             return;
         }
-        this.itemSelected();
+        this.onSelectedItemChosen();
     };
     return ko;
 })(ko || {});
@@ -943,16 +1031,18 @@ var ko = (function (ko) {
     ko.Audio = function () {
         this.sounds = [];
     };
-    ko.Audio.prototype.playSound = function(url, volume, id) {
+    ko.Audio.prototype.playSound = function(url, loop, id, volume) {
         var sound = new Audio(url);
         sound.id = id;
         sound.volume = volume || 1;
+        sound.loop = loop;
         sound.play();
         this.sounds.push(sound);
     };
-    ko.Audio.prototype.playMusic = function(url, volume) {
+    ko.Audio.prototype.playMusic = function(url, loop, volume) {
         this.music = new Audio(url);
         this.music.volume = volume || 1;
+        this.music.loop = loop;
         this.music.play();
     };
     ko.Audio.prototype.stopSound = function(id) {

@@ -45,7 +45,6 @@ var ko = (function (ko) {
         }
         return this.elapsed >= this.duration;
     };
-
     ko.MoveTo = function (x, y, duration, actionEase) {
         ko.Action.call(this, duration, actionEase);
         this.moveTo = { x: x, y: y };
@@ -64,7 +63,22 @@ var ko = (function (ko) {
         this.target.position.y = this.moveFrom.y + 
             ((this.moveTo.y - this.moveFrom.y) * this.value);
     };
-
+    ko.MoveBy = function (x, y, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
+        this.moveBy = { x: x, y: y };
+    };
+    ko.MoveBy.prototype = Object.create(ko.Action.prototype);
+    ko.MoveBy.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.moveFrom = { 
+            x: target.position.x, 
+            y: target.position.y 
+        };
+    };
+    ko.MoveBy.prototype.perform = function () {
+        this.target.position.x = this.moveFrom.x + this.moveBy.x * this.value;
+        this.target.position.y = this.moveFrom.y + this.moveBy.y * this.value;
+    };
     ko.ScaleTo = function (scaleTo, duration, actionEase) {
         ko.Action.call(this, duration, actionEase);
         this.scaleTo = scaleTo;
@@ -78,7 +92,18 @@ var ko = (function (ko) {
         this.target.scale = this.scaleFrom + 
             ((this.scaleTo - this.scaleFrom) * this.value);
     };
-
+    ko.ScaleBy = function (scaleBy, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
+        this.scaleBy = scaleBy;
+    };
+    ko.ScaleBy.prototype = Object.create(ko.Action.prototype);
+    ko.ScaleBy.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.scaleFrom = target.scale;
+    };
+    ko.ScaleBy.prototype.perform = function () {
+        this.target.scale = this.scaleFrom + this.scaleBy * this.value;
+    };
     ko.RotateTo = function (rotateTo, duration, actionEase) {
         ko.Action.call(this, duration, actionEase);
         this.rotateTo = rotateTo;
@@ -92,7 +117,18 @@ var ko = (function (ko) {
         this.target.rotation = this.rotateFrom + 
             ((this.rotateTo - this.rotateFrom) * this.value);
     };
-
+    ko.RotateBy = function (rotateBy, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
+        this.rotateBy = rotateBy;
+    };
+    ko.RotateBy.prototype = Object.create(ko.Action.prototype);
+    ko.RotateBy.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.rotateFrom = target.rotation;
+    };
+    ko.RotateBy.prototype.perform = function () {
+        this.target.rotation = this.rotateFrom + this.rotateBy * this.value;
+    };
     ko.FadeTo = function (fadeTo, duration, actionEase) {
         ko.Action.call(this, duration, actionEase);
         this.fadeTo = fadeTo;
@@ -106,12 +142,22 @@ var ko = (function (ko) {
         this.target.opacity = this.fadeFrom + 
             ((this.fadeTo - this.fadeFrom) * this.value);
     };
-
+    ko.FadeBy = function (fadeBy, duration, actionEase) {
+        ko.Action.call(this, duration, actionEase);
+        this.fadeBy = fadeBy;
+    };
+    ko.FadeBy.prototype = Object.create(ko.Action.prototype);
+    ko.FadeBy.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.fadeFrom = target.opacity;
+    };
+    ko.FadeBy.prototype.perform = function () {
+        this.target.opacity = this.fadeFrom + this.fadeBy * this.value;
+    };
     ko.Wait = function (duration) {
         ko.Action.call(this, duration);
     };
     ko.Wait.prototype = Object.create(ko.Action.prototype);
-
     ko.Call = function (func, args) {
         ko.Action.call(this, 0);
         this.func = func;
@@ -124,7 +170,6 @@ var ko = (function (ko) {
         }
         this.func(this.args);
     };
-
     // Ease functions based on code from http://www.cocos2d-iphone.org/
     ko.actionEase = {
         backIn: function (t) {
@@ -156,6 +201,5 @@ var ko = (function (ko) {
             return -0.5 * (Math.cos(Math.PI * t) - 1);
         }
     };
-
     return ko;
 })(ko || {});

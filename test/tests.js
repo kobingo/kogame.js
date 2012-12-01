@@ -380,6 +380,29 @@ test("move to - update (delta 2.0)", function () {
 	deepEqual(node.position, pos);
 });
 
+/* MoveBy */
+
+test("move by - create", function () {
+	var moveBy = new ko.MoveBy({ x:0, y:0 }, 1);
+	ok(moveBy instanceof ko.Action);
+});
+
+test("move by - update (delta 1.0)", function () {
+	var node = new ko.Node();
+	node.position = { x: 10, y: 10 };
+	node.performAction(new ko.MoveBy(100, 50, 1));
+	node.update(1);
+	deepEqual(node.position, { x: 110, y: 60 });
+});
+
+test("move by - update (delta 0.5)", function () {
+	var node = new ko.Node();
+	node.position = { x: 10, y: 10 };
+	node.performAction(new ko.MoveBy(100, 50, 1));
+	node.update(0.5);
+	deepEqual(node.position, { x: 60, y: 35 });
+});
+
 /* ScaleTo */
 
 test("scale to - create", function () {
@@ -409,6 +432,27 @@ test("scale to - update (delta 2.0)", function () {
 	var node = createNodeAndPerformAction(scaleTo);
 	node.update(2);
 	equal(node.scale, scale);
+});
+
+/* ScaleBy */
+
+test("scale by - create", function () {
+	var scaleBy = new ko.ScaleBy(2, 1);
+	ok(scaleBy instanceof ko.Action);
+});
+
+test("scale by - update (delta 1.0)", function () {
+	var node = new ko.Node();
+	node.performAction(new ko.ScaleBy(1, 1));
+	node.update(1);
+	deepEqual(node.scale, 2);
+});
+
+test("scale by - update (delta 0.5)", function () {
+	var node = new ko.Node();
+	node.performAction(new ko.ScaleBy(1, 1));
+	node.update(0.5);
+	deepEqual(node.scale, 1.5);
 });
 
 /* RotateTo */
@@ -442,6 +486,29 @@ test("rotate to - update (delta 2.0)", function () {
 	equal(node.rotation, rotate);
 });
 
+/* RotateBy */
+
+test("rotate by - create", function () {
+	var rotateBy = new ko.RotateBy(Math.PI, 1);
+	ok(rotateBy instanceof ko.Action);
+});
+
+test("rotate by - update (delta 1.0)", function () {
+	var node = new ko.Node();
+	node.rotation = Math.PI;
+	node.performAction(new ko.RotateBy(Math.PI, 1));
+	node.update(1);
+	equal(node.rotation, Math.PI * 2);
+});
+
+test("rotate by - update (delta 0.5)", function () {
+	var node = new ko.Node();
+	node.rotation = Math.PI;
+	node.performAction(new ko.RotateBy(Math.PI, 1));
+	node.update(0.5);
+	deepEqual(node.rotation, Math.PI + Math.PI * 0.5);
+});
+
 /* FadeTo */
 
 test("fade to - create", function () {
@@ -471,6 +538,27 @@ test("fade to - update (delta 2.0)", function () {
 	var node = createNodeAndPerformAction(fadeTo);
 	node.update(2);
 	equal(node.opacity, opacity);
+});
+
+/* FadeBy */
+
+test("fade by - create", function () {
+	var fadeBy = new ko.FadeBy(0.2, 1);
+	ok(fadeBy instanceof ko.Action);
+});
+
+test("fade by - update (delta 1.0)", function () {
+	var node = new ko.Node();
+	node.performAction(new ko.FadeBy(-0.6, 1));
+	node.update(1);
+	equal(node.opacity, 0.4);
+});
+
+test("rotate by - update (delta 0.5)", function () {
+	var node = new ko.Node();
+	node.performAction(new ko.FadeBy(-0.6, 1));
+	node.update(0.5);
+	equal(node.opacity, 0.7);
 });
 
 /* Wait */
@@ -676,5 +764,32 @@ test("popup - update", function () {
 	ok(ko.director.scene === popup);
 	popup.update(0.5);
 	ok(ko.director.scene === sceneA);
+});
+
+/* Menu */
+
+test("menu - create", function () {
+	var menu = new ko.Menu(32, "Arial", ["Item A", "Item B", "Item C"]);
+	ok(menu instanceof ko.Node);
+	equal(menu.items.length, 3);
+	equal(menu.labels.length, 3);
+	equal(menu.children.length, 3);
+});
+
+test("menu - select next/previous item", function () {
+	var menu = new ko.Menu(32, "Arial", ["Item A", "Item B", "Item C"]);
+	menu.selectNextItem();
+	equal(menu.selectedItemIndex, 1);
+	menu.selectPreviousItem();
+	equal(menu.selectedItemIndex, 0);
+});
+
+test("menu - choose selected item", function () {
+	expect(1);
+	var menu = new ko.Menu(32, "Arial", ["Item A", "Item B", "Item C"]);
+	menu.onSelectedItemChosen = function () {
+		ok(true);
+	};
+	menu.chooseSelectedItem();
 });
 
