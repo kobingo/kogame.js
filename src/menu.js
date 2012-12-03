@@ -81,7 +81,7 @@ var ko = (function (ko) {
         if (!this.onSelectedItemChosen) {
             return;
         }
-        this.onSelectedItemChosen(this.selectedItemIndex);
+        this.onSelectedItemChosen();
     };
     return ko;
 })(ko || {});

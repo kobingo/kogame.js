@@ -3,7 +3,7 @@ var ko = (function (ko) {
         ko.Node.call(this, args);
         this.setText(text);
         this.setFont(font);
-        this._draw = function () {
+        this.onDraw = function () {
             ko.graphics.drawLabel(this);
         };
     };

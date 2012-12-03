@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.5.1 - 2012-12-01
+/*! Kogame.js - v0.5.1 - 2012-12-03
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -242,9 +242,9 @@ var ko = (function (ko) {
         this.active = true;
         this.children = [];
         this.actions = [];
-        this._update = args.update || function (delta) {};
-        this._handleInput = args.handleInput || function () {};
-        this._draw = args.draw || function () {};
+        this.onUpdate = args.onUpdate || function (delta) {};
+        this.onHandleInput = args.onHandleInput || function () {};
+        this.onDraw = args.onDraw || function () {};
     };
     ko.Node.prototype.update = function (delta) {
         if (!this.active) {
@@ -267,21 +267,21 @@ var ko = (function (ko) {
         for (i = 0; i < this.children.length; i++) {
             this.children[i].update(delta);
         }
-        this._update(delta);
+        this.onUpdate(delta);
     };
     ko.Node.prototype.draw = function () {
         if (!this.visible) {
             return;
         }
         ko.graphics.beginTransform(this);
-        this._draw();
+        this.onDraw();
         for (var i = 0; i < this.children.length; i++) {
             this.children[i].draw();
         }
         ko.graphics.endTransform();
     };
     ko.Node.prototype.handleInput = function () {
-        this._handleInput();
+        this.onHandleInput();
         for (var i = 0; i < this.children.length; i++) {
             this.children[i].handleInput();
         }
@@ -295,6 +295,17 @@ var ko = (function (ko) {
         }
         this.children.push(child);
         child.parent = this;
+    };
+    ko.Node.prototype.getAllChildren = function () {
+        var _children = [];
+        var _getAllChildren = function (parent) {
+            for (var i = 0; i < parent.children.length; i++) {
+                _children.push(parent.children[i]);
+                _getAllChildren(parent.children[i]);
+            }
+        };
+        _getAllChildren(this);
+        return _children;
     };
     ko.Node.prototype.performAction = function (action) {
         if (action.target) {
@@ -311,36 +322,36 @@ var ko = (function (ko) {
         this.actions[index].target = null;
         this.actions.splice(index, 1);
     };
-    ko.Node.prototype.moveTo = function (x, y, duration, ease) {
-        this.performAction(new ko.MoveTo(x, y, duration, ease));
+    ko.Node.prototype.moveTo = function (x, y, duration, actionEase) {
+        this.performAction(new ko.MoveTo(x, y, duration, actionEase));
         return this;
     };
-    ko.Node.prototype.moveBy = function (x, y, duration, ease) {
-        this.performAction(new ko.MoveBy(x, y, duration, ease));
+    ko.Node.prototype.moveBy = function (x, y, duration, actionEase) {
+        this.performAction(new ko.MoveBy(x, y, duration, actionEase));
         return this;
     };
-    ko.Node.prototype.scaleTo = function (scaleTo, duration, ease) {
-        this.performAction(new ko.ScaleTo(scaleTo, duration, ease));
+    ko.Node.prototype.scaleTo = function (scaleTo, duration, actionEase) {
+        this.performAction(new ko.ScaleTo(scaleTo, duration, actionEase));
         return this;
     };
-    ko.Node.prototype.scaleBy = function (scaleBy, duration, ease) {
-        this.performAction(new ko.ScaleBy(scaleBy, duration, ease));
+    ko.Node.prototype.scaleBy = function (scaleBy, duration, actionEase) {
+        this.performAction(new ko.ScaleBy(scaleBy, duration, actionEase));
         return this;
     };
-    ko.Node.prototype.rotateTo = function (rotateTo, duration, ease) {
-        this.performAction(new ko.RotateTo(rotateTo, duration, ease));
+    ko.Node.prototype.rotateTo = function (rotateTo, duration, actionEase) {
+        this.performAction(new ko.RotateTo(rotateTo, duration, actionEase));
         return this;
     };
-    ko.Node.prototype.rotateBy = function (rotateBy, duration, ease) {
-        this.performAction(new ko.RotateBy(rotateBy, duration, ease));
+    ko.Node.prototype.rotateBy = function (rotateBy, duration, actionEase) {
+        this.performAction(new ko.RotateBy(rotateBy, duration, actionEase));
         return this;
     };
-    ko.Node.prototype.fadeTo = function (fadeTo, duration, ease) {
-        this.performAction(new ko.FadeTo(fadeTo, duration, ease));
+    ko.Node.prototype.fadeTo = function (fadeTo, duration, actionEase) {
+        this.performAction(new ko.FadeTo(fadeTo, duration, actionEase));
         return this;
     };
-    ko.Node.prototype.fadeBy = function (fadeBy, duration, ease) {
-        this.performAction(new ko.FadeBy(fadeBy, duration, ease));
+    ko.Node.prototype.fadeBy = function (fadeBy, duration, actionEase) {
+        this.performAction(new ko.FadeBy(fadeBy, duration, actionEase));
         return this;
     };
     ko.Node.prototype.sequence = function (repeat) {
@@ -387,7 +398,7 @@ var ko = (function (ko) {
                 height: self.image.height 
             };
         });
-        this._draw = function () {
+        this.onDraw = function () {
             ko.graphics.drawSprite(this);
         };
     };
@@ -400,7 +411,7 @@ var ko = (function (ko) {
         ko.Node.call(this, args);
         this.setText(text);
         this.setFont(font);
-        this._draw = function () {
+        this.onDraw = function () {
             ko.graphics.drawLabel(this);
         };
     };
@@ -868,7 +879,7 @@ var ko = (function (ko) {
             wait(duration).
             action(transitionComplete).
             init(this);
-        this._draw = function () {
+        this.onDraw = function () {
             if (this.fromScene) {
                 this.fromScene.draw();
             }
@@ -909,7 +920,7 @@ var ko = (function (ko) {
             call(transitionIn).
             wait(duration).
             init(this);
-        this._draw = function () {
+        this.onDraw = function () {
             this.fromScene.draw();
             this.toScene.draw();
         };

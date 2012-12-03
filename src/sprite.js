@@ -15,7 +15,7 @@ var ko = (function (ko) {
                 height: self.image.height 
             };
         });
-        this._draw = function () {
+        this.onDraw = function () {
             ko.graphics.drawSprite(this);
         };
     };

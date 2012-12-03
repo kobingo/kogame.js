@@ -67,7 +67,7 @@ test("node - create", function () {
 test("node - update", function () {
 	var updated = false;
 	var node = new ko.Node({
-		update: function (delta) {
+		onUpdate: function (delta) {
 			updated = true;
 		}
 	});
@@ -208,6 +208,27 @@ test("node - set position", function () {
 	var position = { x: 245, y: 873 };
 	node.setPosition(position);
 	deepEqual(node.position, position);
+});
+
+test("node - get all children", function () {
+	var i;
+	var node1 = new ko.Node();
+	var node2 = new ko.Node();
+	for (i = 0; i < 5; i++) {
+		node2.addChild(new ko.Node());
+	}
+	var node3 = new ko.Node();
+	for (i = 0; i < 2; i++) {
+		var node4 = new ko.Node();
+		node3.addChild(node4);
+		for (var j = 0; j < 2; j++) {
+			node4.addChild(new ko.Node());
+		}
+	}
+	node1.addChild(node2);
+	node1.addChild(node3);
+	var childList = node1.getAllChildren();
+	equal(childList.length, 13);
 });
 
 /* Sprite */
@@ -659,7 +680,7 @@ test("sequence - is complete", function () {
 test("director - update scene", function () {
 	var updated = false;
 	var scene = new ko.Scene({
-		update: function (delta) {
+		onUpdate: function (delta) {
 			updated = true;
 		}
 	});
@@ -715,12 +736,12 @@ test("transition - update", function () {
 	var sceneAUpdated = false;
 	var sceneBUpdated = false;
 	var sceneA = new ko.Scene({ 
-		update: function (delta) {
+		onUpdate: function (delta) {
 			sceneAUpdated = true;
 		}
 	});
 	var sceneB = new ko.Scene({ 
-		update: function (delta) {
+		onUpdate: function (delta) {
 			sceneBUpdated = true;
 		}
 	});

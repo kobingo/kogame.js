@@ -18,7 +18,7 @@
 		sprite.scale = 0.5;
 		// Create scene with handleinput and add sprite
 		var scene = new ko.Scene({
-			handleInput: function (delta) {
+			onHandleInput: function (delta) {
 				if (ko.keyboard.wasKeyPressed(ko.keyboard.ENTER)) {
 					// Create sequence with scaleto actions
 					sprite.sequence(1).

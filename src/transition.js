@@ -27,7 +27,7 @@ var ko = (function (ko) {
             wait(duration).
             action(transitionComplete).
             init(this);
-        this._draw = function () {
+        this.onDraw = function () {
             if (this.fromScene) {
                 this.fromScene.draw();
             }

@@ -21,7 +21,7 @@
 		label2.centerAnchor();
 		// Create first scene with handleinput and add first label
 		var scene1 = new ko.Scene({
-			handleInput: function (delta) {
+			onHandleInput: function (delta) {
 				if (ko.keyboard.wasKeyPressed(ko.keyboard.ENTER)) {
 					ko.director.fadeTo(scene2, 1, 'rgb(255,255,255)');
 				}
@@ -30,7 +30,7 @@
 		scene1.addChild(label1);
 		// Create second scene with handleinput and add second label
 		var scene2 = new ko.Scene({
-			handleInput: function (delta) {
+			onHandleInput: function (delta) {
 				if (ko.keyboard.wasKeyPressed(ko.keyboard.ESCAPE)) {
 					ko.director.slideTo(scene1, 768, 0, 1, ko.actionEase.sineInOut);
 				}
