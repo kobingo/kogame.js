@@ -14,33 +14,45 @@ var ko = (function (ko) {
         }
         this.scene.draw();
     };
+    Director.prototype.transitionTo = function(scene, duration, transitionOut, 
+        transitionIn, wait) {
+        var trans = new ko.Transition(this.scene, scene, duration, 
+            transitionOut, transitionIn, wait);
+        this.scene = trans;
+        return trans;
+    };
+    Director.prototype.popupTo = function(scene, duration, transitionOut, 
+        transitionIn) {
+        var popup = new ko.Popup(this.scene, scene, duration, 
+            transitionOut, transitionIn);
+        this.scene = popup;
+        return popup;
+    };
     Director.prototype.fadeTo = function(scene, duration, color) {
         color = color || 'rgb(0,0,0)';
-        var transition = new ko.Transition(scene, duration, function () {
-            transition.fromScene.color = color;
-            transition.fromScene.fadeTo(1, duration / 2, ko.actionEase.sineInOut);
-            transition.toScene.visible = false;
+        var trans = this.transitionTo(scene, duration, function () {
+            trans.fromScene.color = color;
+            trans.fromScene.fadeTo(1, duration/2, ko.actionEase.sineInOut);
+            trans.toScene.visible = false;
         }, function () {
-            transition.fromScene.visible = false;
-            transition.toScene.position = { x: 0, y: 0 };
-            transition.toScene.color = color;
-            transition.toScene.opacity = 1;
-            transition.toScene.fadeTo(0, duration / 2, ko.actionEase.sineInOut);
-            transition.toScene.visible = true;
+            trans.fromScene.visible = false;
+            trans.toScene.position = { x: 0, y: 0 };
+            trans.toScene.color = color;
+            trans.toScene.opacity = 1;
+            trans.toScene.fadeTo(0, duration/2, ko.actionEase.sineInOut);
+            trans.toScene.visible = true;
         });
-        this.scene = transition;
     };
     Director.prototype.slideTo = function(scene, x, y, duration, actionEase) {
         actionEase = actionEase || ko.actionEase.sineInOut;
-        var transition = new ko.Transition(scene, duration, function () {
-            transition.fromScene.visible = true;
-            transition.fromScene.moveTo(x, y, duration, actionEase);
-            transition.toScene.visible = true;
-            transition.toScene.position = { x: -x, y: -y };
-            transition.toScene.opacity = 0;
-            transition.toScene.moveTo(0, 0, duration, actionEase);
+        var trans = this.transitionTo(scene, duration, function () {
+            trans.fromScene.visible = true;
+            trans.fromScene.moveTo(x, y, duration, actionEase);
+            trans.toScene.visible = true;
+            trans.toScene.position = { x: -x, y: -y };
+            trans.toScene.opacity = 0;
+            trans.toScene.moveTo(0, 0, duration, actionEase);
         });
-        this.scene = transition;
     };
     ko.director = new Director();
     return ko;

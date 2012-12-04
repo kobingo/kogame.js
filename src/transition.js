@@ -1,17 +1,17 @@
 var ko = (function (ko) {
     ko.Transition = 
-        function (scene, duration, transitionOut, transitionIn, wait) {
-        if (!scene) {
-            throw new Error("'scene' have not been specified when creating " +
+        function (fromScene, toScene, duration, transitionOut, transitionIn, wait) {
+        if (!fromScene) {
+            throw new Error("'fromScene' have not been specified when creating " +
                 "transition");
         }
-        if (!ko.director.scene) {
-            throw new Error("'ko.director.scene' can not be empty when " +
-                "creating transition");
+        if (!toScene) {
+            throw new Error("'toScene' have not been specified when creating " +
+                "transition");
         }
         ko.Scene.call(this);
-        this.fromScene = ko.director.scene;
-        this.toScene = scene;
+        this.fromScene = fromScene;
+        this.toScene = toScene;
         // The duration is meant to be specified as the total duration for the 
         // transition. The duration is split up among transition-in/out.
         duration = duration / 2;

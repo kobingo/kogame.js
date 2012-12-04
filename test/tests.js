@@ -723,12 +723,21 @@ test("transition - create", function () {
 	ok(transition instanceof ko.Scene);
 });
 
-test("transition - create (should throw exception)", function () {
+test("transition - create (should throw exception A)", function () {
 	throws(
         function() {
 			var transition = new ko.Transition();
         },
-        /'scene' have not been specified when creating transition/
+        /'fromScene' have not been specified when creating transition/
+    );
+});
+
+test("transition - create (should throw exception B)", function () {
+	throws(
+        function() {
+			var transition = new ko.Transition(new ko.Scene());
+        },
+        /'toScene' have not been specified when creating transition/
     );
 });
 
@@ -745,8 +754,7 @@ test("transition - update", function () {
 			sceneBUpdated = true;
 		}
 	});
-	ko.director.scene = sceneA;
-	var transition = new ko.Transition(sceneB, 1);
+	var transition = new ko.Transition(sceneA, sceneB, 1);
 	ko.director.scene = transition;
 	transition.update(0.1);
 	ok(ko.director.scene === transition);
@@ -763,16 +771,32 @@ test("transition - update", function () {
 test("popup - create", function () {
 	var sceneA = new ko.Scene();
 	var sceneB = new ko.Scene();
-	ko.director.scene = sceneA;
-	var popup = new ko.Popup(sceneB, 1);
+	var popup = new ko.Popup(sceneA, sceneB, 1);
 	ok(popup instanceof ko.Scene);
+});
+
+test("popup - create (should throw exception A)", function () {
+	throws(
+        function() {
+			var popup = new ko.Popup();
+        },
+        /'fromScene' have not been specified when creating popup/
+    );
+});
+
+test("popup - create (should throw exception B)", function () {
+	throws(
+        function() {
+			var popup = new ko.Popup(new ko.Scene());
+        },
+        /'toScene' have not been specified when creating popup/
+    );
 });
 
 test("popup - update", function () {
 	var sceneA = new ko.Scene();
 	var sceneB = new ko.Scene();
-	ko.director.scene = sceneA;
-	var popup = new ko.Popup(sceneB, 1);
+	var popup = new ko.Popup(sceneA, sceneB, 1);
 	ko.director.scene = popup;
 	popup.update(0.1);
 	popup.update(0.5);
