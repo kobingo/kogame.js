@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.5.1 - 2012-12-04
+/*! Kogame.js - v0.5.1 - 2012-12-05
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -816,29 +816,32 @@ var ko = (function (ko) {
     };
     Director.prototype.fadeTo = function(scene, duration, color) {
         color = color || 'rgb(0,0,0)';
-        var trans = this.transitionTo(scene, duration, function () {
-            trans.fromScene.color = color;
-            trans.fromScene.fadeTo(1, duration/2, ko.actionEase.sineInOut);
-            trans.toScene.visible = false;
-        }, function () {
-            trans.fromScene.visible = false;
-            trans.toScene.position = { x: 0, y: 0 };
-            trans.toScene.color = color;
-            trans.toScene.opacity = 1;
-            trans.toScene.fadeTo(0, duration/2, ko.actionEase.sineInOut);
-            trans.toScene.visible = true;
-        });
+        var fadeOut = function () {
+            transition.fromScene.color = color;
+            transition.fromScene.fadeTo(1, duration/2, ko.actionEase.sineInOut);
+            transition.toScene.visible = false;
+        };
+        var fadeIn = function () {
+            transition.fromScene.visible = false;
+            transition.toScene.position = { x: 0, y: 0 };
+            transition.toScene.color = color;
+            transition.toScene.opacity = 1;
+            transition.toScene.fadeTo(0, duration/2, ko.actionEase.sineInOut);
+            transition.toScene.visible = true;
+        };
+        var transition = this.transitionTo(scene, duration, fadeOut, fadeIn);
     };
     Director.prototype.slideTo = function(scene, x, y, duration, actionEase) {
         actionEase = actionEase || ko.actionEase.sineInOut;
-        var trans = this.transitionTo(scene, duration, function () {
-            trans.fromScene.visible = true;
-            trans.fromScene.moveTo(x, y, duration, actionEase);
-            trans.toScene.visible = true;
-            trans.toScene.position = { x: -x, y: -y };
-            trans.toScene.opacity = 0;
-            trans.toScene.moveTo(0, 0, duration, actionEase);
-        });
+        var slide = function () {
+            transition.fromScene.visible = true;
+            transition.fromScene.moveTo(x, y, duration, actionEase);
+            transition.toScene.visible = true;
+            transition.toScene.position = { x: -x, y: -y };
+            transition.toScene.opacity = 0;
+            transition.toScene.moveTo(0, 0, duration, actionEase);
+        };
+        var transition = this.transitionTo(scene, duration, slide);
     };
     ko.director = new Director();
     return ko;
