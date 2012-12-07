@@ -24,23 +24,22 @@ then create a html file with the following markup.
     </head>
     <body>
         <canvas id="game" width="768" height="432"></canvas>
-        <script type="text/javascript" src="kogame-0.5.0.js"></script>
+        <script type="text/javascript" src="kogame-0.5.1.js"></script>
         <script type="text/javascript">
             ko.game.init('game');
     
             var center = ko.graphics.center;
     
             var label = new ko.Label("Kogame.js", "48px Comic Sans MS");
-            label.anchor = { x: 0.5, y: 0.5 };
+            label.centerAnchor();
             label.position = { x: center.x, y: -100 };
-            
-            label.sequence().
+    
+            label.performSequence().
                 moveTo(center.x, center.y, 1, ko.actionEase.backInOut).
-            	wait(1).
-            	fadeTo(0, 0.5, ko.actionEase.sineInOut).
-            	moveTo(center.x, -100, 0).
-            	fadeTo(1, 0).
-            	init(label);
+                wait(1).
+                fadeTo(0, 0.5, ko.actionEase.sineInOut).
+                moveTo(center.x, -100, 0).
+                fadeTo(1, 0);
     
             var scene = new ko.Scene();
             scene.addChild(label);
