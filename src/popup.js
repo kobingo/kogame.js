@@ -14,10 +14,9 @@ var ko = (function (ko) {
         this.toScene = toScene;
         this.duration = duration;
         this.transitionOut = transitionOut;
-        this.sequence(1).
+        this.performSequence(1).
             call(transitionIn).
-            wait(duration).
-            init(this);
+            wait(duration);
         this.onDraw = function () {
             this.fromScene.draw();
             this.toScene.draw();
@@ -38,11 +37,10 @@ var ko = (function (ko) {
         var transitionComplete = new ko.Call(function () {
             ko.director.scene = self.fromScene;
         });
-        this.sequence(1).
+        this.performSequence(1).
             call(self.transitionOut).
             wait(this.duration).
-            action(transitionComplete).
-            init(this);
+            action(transitionComplete);
     };
     return ko;
 })(ko || {});

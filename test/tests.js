@@ -6,10 +6,11 @@ var createNodeAndPerformAction = function (action) {
 	return node;
 };
 
-var createNode = function(x, y, width, height) {
+var createNode = function(x, y, width, height, radius) {
 	var node = new ko.Node();
 	node.position = { x: x, y: y };
 	node.size = { width: width, height: height };
+	node.radius = radius;
 	return node;
 };
 
@@ -172,7 +173,7 @@ test("node - fade to", function () {
 
 test("node - sequence", function () {
 	var node = new ko.Node();
-	node.sequence().scaleTo(2, 1).rotateTo(1, 1).init(node);
+	node.performSequence().scaleTo(2, 1).rotateTo(1, 1).init(node);
 	node.update(1);
 	equal(node.scale, 2);
 	node.update(1);
@@ -182,11 +183,7 @@ test("node - sequence", function () {
 test("node - is colliding", function () {
 	var node1 = createNode(100, 100, 100, 100);
 	var node2 = createNode(150, 180, 100, 100);
-	ok(!node1.boundingBox);
-	ok(!node2.boundingBox);
 	ok(node2.isColliding(node1, true));
-	ok(node1.boundingBox);
-	ok(node2.boundingBox);
 	deepEqual(node2.position, { x: 150, y: 200 });
 });
 
@@ -267,78 +264,105 @@ test("label - create", function () {
 /* Collision */
 
 test("bounding box - is intersecting left", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	var bbox2 = createBoundingBox(50, 100, 100, 100);
-	ok(bbox2.isIntersecting(bbox1));
+	var node1 = createNode(100, 100, 100, 100);
+	var node2 = createNode(50, 100, 100, 100);
+	ok(ko.isBoundingBoxIntersecting(node1, node2));
 });
 
 test("bounding box - is intersecting rigth", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	var bbox2 = createBoundingBox(150, 100, 100, 100);
-	ok(bbox2.isIntersecting(bbox1));
+	var node1 = createNode(100, 100, 100, 100);
+	var node2 = createNode(150, 100, 100, 100);
+	ok(ko.isBoundingBoxIntersecting(node1, node2));
 });
 
 test("bounding box - is intersecting top", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	var bbox2 = createBoundingBox(100, 150, 100, 100);
-	ok(bbox2.isIntersecting(bbox1));
+	var node1 = createNode(100, 100, 100, 100);
+	var node2 = createNode(100, 150, 100, 100);
+	ok(ko.isBoundingBoxIntersecting(node1, node2));
 });
 
 test("bounding box - is intersecting bottom", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	var bbox2 = createBoundingBox(100, 50, 100, 100);
-	ok(bbox2.isIntersecting(bbox1));
+	var node1 = createNode(100, 100, 100, 100);
+	var node2 = createNode(100, 50, 100, 100);
+	ok(ko.isBoundingBoxIntersecting(node1, node2));
 });
 
 test("bounding box - is intersecting (anchor 0.5 0.5)", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	bbox1.node.anchor = { x: 0.5, y: 0.5 };
-	var bbox2 = createBoundingBox(150, 150, 100, 100);
-	bbox2.node.anchor = { x: 0.5, y: 0.5 };
-	ok(bbox2.isIntersecting(bbox1));
+	var node1 = createNode(100, 100, 100, 100);
+	node1.anchor = { x: 0.5, y: 0.5 };
+	var node2 = createNode(150, 150, 100, 100);
+	node2.anchor = { x: 0.5, y: 0.5 };
+	ok(ko.isBoundingBoxIntersecting(node1, node2));
 });
 
 test("bounding box - is not intersecting", function () {
-	var bbox1 = createBoundingBox(100, 100, 50, 50);
-	var bbox2 = createBoundingBox(150, 150, 100, 100);
-	ok(!bbox2.isIntersecting(bbox1));
+	var node1 = createNode(100, 100, 50, 50);
+	var node2 = createNode(150, 150, 100, 100);
+	ok(!ko.isBoundingBoxIntersecting(node1, node2));
 });
 
 test("bounding box - separate left", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	var bbox2 = createBoundingBox(75, 100, 50, 50);
-	bbox2.isIntersecting(bbox1, true);
-	deepEqual(bbox2.node.position, { x: 50, y: 100 });
+	var node1 = createNode(100, 100, 100, 100);
+	var node2 = createNode(75, 100, 50, 50);
+	ko.isBoundingBoxIntersecting(node2, node1, true);
+	deepEqual(node2.position, { x: 50, y: 100 });
 });
 
 test("bounding box - separate right", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	var bbox2 = createBoundingBox(175, 100, 50, 50);
-	bbox2.isIntersecting(bbox1, true);
-	deepEqual(bbox2.node.position, { x: 200, y: 100 });
+	var node1 = createNode(100, 100, 100, 100);
+	var node2 = createNode(175, 100, 50, 50);
+	ko.isBoundingBoxIntersecting(node2, node1, true);
+	deepEqual(node2.position, { x: 200, y: 100 });
 });
 
 test("bounding box - separate top", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	var bbox2 = createBoundingBox(100, 75, 50, 50);
-	bbox2.isIntersecting(bbox1, true);
-	deepEqual(bbox2.node.position, { x: 100, y: 50 });
+	var node1 = createNode(100, 100, 100, 100);
+	var node2 = createNode(100, 75, 50, 50);
+	ko.isBoundingBoxIntersecting(node2, node1, true);
+	deepEqual(node2.position, { x: 100, y: 50 });
 });
 
 test("bounding box - separate bottom", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	var bbox2 = createBoundingBox(100, 175, 50, 50);
-	bbox2.isIntersecting(bbox1, true);
-	deepEqual(bbox2.node.position, { x: 100, y: 200 });
+	var node1 = createNode(100, 100, 100, 100);
+	var node2 = createNode(100, 175, 50, 50);
+	ko.isBoundingBoxIntersecting(node2, node1, true);
+	deepEqual(node2.position, { x: 100, y: 200 });
 });
 
 test("bounding box - separate (anchor 0.5 0.5)", function () {
-	var bbox1 = createBoundingBox(100, 100, 100, 100);
-	bbox1.node.anchor = { x: 0.5, y: 0.5 };
-	var bbox2 = createBoundingBox(75, 100, 50, 50);
-	bbox2.node.anchor = { x: 0.5, y: 0.5 };
-	bbox2.isIntersecting(bbox1, true);
-	deepEqual(bbox2.node.position, { x: 175, y: 100 });
+	var node1 = createNode(100, 100, 100, 100);
+	node1.anchor = { x: 0.5, y: 0.5 };
+	var node2 = createNode(75, 100, 50, 50);
+	node2.anchor = { x: 0.5, y: 0.5 };
+	ko.isBoundingBoxIntersecting(node2, node1, true);
+	deepEqual(node2.position, { x: 175, y: 100 });
+});
+
+test("bounding sphere - is intersecting 1", function () {
+	var node1 = createNode(50, 100, 0, 0, 5);
+	var node2 = createNode(60, 100, 0, 0, 5);
+	ok(ko.isBoundingSphereIntersecting(node1, node2));
+});
+
+test("bounding sphere - is intersecting 2", function () {
+	var node1 = createNode(50, 100, 0, 0, 50);
+	var node2 = createNode(60, 100, 0, 0, 5);
+	ok(ko.isBoundingSphereIntersecting(node1, node2));
+});
+
+test("bounding sphere - is not intersecting", function () {
+	var node1 = createNode(100, 100, 0, 0, 25);
+	var node2 = createNode(100, 150, 0, 0, 20);
+	ok(!ko.isBoundingSphereIntersecting(node1, node2));
+});
+
+test("bounding sphere - is intersecting (should throw exception)", function () {
+	throws(
+        function() {
+            ko.isBoundingSphereIntersecting(new ko.Node(), new ko.Node());
+        },
+        /Both nodes must have a radius when testing for bounding sphere intersection./
+    );
 });
 
 /* Action */
@@ -591,7 +615,7 @@ test("wait - create", function () {
 
 test("wait - update", function () {
 	var node = new ko.Node();
-	node.sequence().wait(1).scaleTo(2, 1).init(node);
+	node.performSequence().wait(1).scaleTo(2, 1).init(node);
 	node.update(1);
 	equal(node.scale, 1);
 	node.update(1);

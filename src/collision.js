@@ -1,28 +1,25 @@
 var ko = (function (ko) {
-    ko.BoundingBox = function (node) {
-        this.node = node;
-    };
-    ko.BoundingBox.prototype.isIntersecting = function(bbox, separate) {
+    ko.isBoundingBoxIntersecting = function(node1, node2, separate) {
         var a = {
-            x: this.node.position.x,
-            y: this.node.position.y,
-            w: this.node.size.width,
-            h: this.node.size.height
+            x: node1.position.x,
+            y: node1.position.y,
+            w: node1.size.width,
+            h: node1.size.height
         };
-        a.l = a.x - a.w * this.node.anchor.x;
-        a.r = a.x + a.w * (1 - this.node.anchor.x);
-        a.t = a.y - a.h * this.node.anchor.y;
-        a.b = a.y + a.h * (1 - this.node.anchor.y);
+        a.l = a.x - a.w * node1.anchor.x;
+        a.r = a.x + a.w * (1 - node1.anchor.x);
+        a.t = a.y - a.h * node1.anchor.y;
+        a.b = a.y + a.h * (1 - node1.anchor.y);
         var b = {
-            x: bbox.node.position.x,
-            y: bbox.node.position.y,
-            w: bbox.node.size.width,
-            h: bbox.node.size.height
+            x: node2.position.x,
+            y: node2.position.y,
+            w: node2.size.width,
+            h: node2.size.height
         };
-        b.l = b.x - b.w * bbox.node.anchor.x;
-        b.r = b.x + b.w * (1 - bbox.node.anchor.x);
-        b.t = b.y - b.h * bbox.node.anchor.y;
-        b.b = b.y + b.h * (1 - bbox.node.anchor.y);
+        b.l = b.x - b.w * node2.anchor.x;
+        b.r = b.x + b.w * (1 - node2.anchor.x);
+        b.t = b.y - b.h * node2.anchor.y;
+        b.b = b.y + b.h * (1 - node2.anchor.y);
         if (a.r <= b.l || a.l >= b.r || a.b <= b.t || a.t >= b.b) {
             return false;
         }
@@ -33,18 +30,36 @@ var ko = (function (ko) {
         var diffy = Math.min(Math.abs(a.b - b.t), Math.abs(b.b - a.t));
         if (diffx < diffy) {
             if (a.l < b.l) {
-                this.node.position.x = b.l - a.w * (1 - this.node.anchor.x);
+                node1.position.x = b.l - a.w * (1 - node1.anchor.x);
             } else {
-                this.node.position.x = b.r + a.w * this.node.anchor.x;
+                node1.position.x = b.r + a.w * node1.anchor.x;
             }
         } else {
             if (a.t < b.t) {
-                this.node.position.y = b.t - a.h * (1 - this.node.anchor.y);
+                node1.position.y = b.t - a.h * (1 - node1.anchor.y);
             } else {
-                this.node.position.y = b.b + a.h * this.node.anchor.y;
+                node1.position.y = b.b + a.h * node1.anchor.y;
             }
         }
         return true;
+    };
+    ko.isBoundingSphereIntersecting = function (node1, node2, separate) {
+        if (!node1.radius || !node2.radius) {
+            throw new Error("Both nodes must have a radius when testing for " +
+                "bounding sphere intersection.");
+        }
+        var x = node1.position.x - node2.position.x;
+        var y = node1.position.y - node2.position.y;
+        var distance = Math.sqrt(x * x + y * y);
+        if(distance <= (node1.radius + node2.radius))
+        {
+            return true;
+        }
+        return false;
+    };
+    ko.collisionType = {
+        BOX: 0,
+        SPHERE: 1
     };
     return ko;
 })(ko || {});

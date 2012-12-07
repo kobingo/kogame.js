@@ -17,10 +17,9 @@
 		sprite.centerAnchor();
 		sprite.scale = 0.5;
 		// Create sequence with moveto actions
-		sprite.sequence().
+		sprite.performSequence().
 			moveTo(284, 216, 1, ko.actionEase.sineInOut).
-			moveTo(484, 216, 1, ko.actionEase.sineInOut).
-			init(sprite);
+			moveTo(484, 216, 1, ko.actionEase.sineInOut);
 		// Create scene and add sprite
 		var scene = new ko.Scene();
 		scene.addChild(sprite);

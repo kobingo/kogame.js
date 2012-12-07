@@ -126,19 +126,20 @@ var ko = (function (ko) {
         this.performAction(new ko.FadeBy(fadeBy, duration, actionEase));
         return this;
     };
-    ko.Node.prototype.sequence = function (repeat) {
+    ko.Node.prototype.performSequence = function (repeat) {
         var sequence = new ko.Sequence([], repeat);
-        this.actions.push(sequence);
+        this.performAction(sequence);
         return sequence;
     };
-    ko.Node.prototype.isColliding = function (node, separate) {
-        if (!this.boundingBox) {
-            this.boundingBox = new ko.BoundingBox(this);
+    ko.Node.prototype.isColliding = function (node, separate, collisionType) {
+        collisionType = collisionType || ko.collisionType.BOX;
+        switch (collisionType) {
+            case ko.collisionType.BOX:
+                return ko.isBoundingBoxIntersecting(this, node, separate);
+            case ko.collisionType.SPHERE:
+                return ko.isBoundingSphereIntersecting(this, node, separate);
         }
-        if (!node.boundingBox) {
-            node.boundingBox = new ko.BoundingBox(node);
-        }
-        return this.boundingBox.isIntersecting(node.boundingBox, separate);
+        return false;
     };
     ko.Node.prototype.setPosition = function (position) {
         this.position = { x: position.x, y: position.y };

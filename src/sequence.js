@@ -6,14 +6,6 @@ var ko = (function (ko) {
         this.repeatIndex = 0;
     };
     ko.Sequence.prototype = Object.create(ko.Action.prototype);
-    ko.Sequence.prototype.init = function (target) {
-        this.actionIndex = 0;
-        this.repeatIndex = 0;
-        if (this.actions.length > 0) {
-            this.actions[0].init(target);
-        }
-        this.target = target;
-    };
     ko.Sequence.prototype.update = function (delta) {
         if (this.actions.length === 0) {
             return;
@@ -22,8 +14,10 @@ var ko = (function (ko) {
             return;
         }
         var currentAction = this.actions[this.actionIndex];
+        if (!currentAction.target) {
+            currentAction.init(this.target);
+        }
         currentAction.update(delta);
-        var durationIsZero;
         while (currentAction.isComplete()) {
             this.nextAction();
             // When we have repeated enough times we want to return immediatly

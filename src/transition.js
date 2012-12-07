@@ -19,14 +19,13 @@ var ko = (function (ko) {
         var transitionComplete = new ko.Call(function () {
             ko.director.scene = self.toScene;
         });
-        this.sequence(1).
+        this.performSequence(1).
             call(transitionOut).
             wait(duration).
             wait(wait).
             call(transitionIn).
             wait(duration).
-            action(transitionComplete).
-            init(this);
+            action(transitionComplete);
         this.onDraw = function () {
             if (this.fromScene) {
                 this.fromScene.draw();

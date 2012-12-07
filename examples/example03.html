@@ -21,10 +21,9 @@
 			onHandleInput: function (delta) {
 				if (ko.keyboard.wasKeyPressed(ko.keyboard.ENTER)) {
 					// Create sequence with scaleto actions
-					sprite.sequence(1).
+					sprite.performSequence(1).
 						scaleTo(0.6, 0.2, ko.actionEase.sineInOut).
-						scaleTo(0.5, 0.2, ko.actionEase.sineInOut).
-						init(sprite);
+						scaleTo(0.5, 0.2, ko.actionEase.sineInOut);
 				}
 			}
 		});
