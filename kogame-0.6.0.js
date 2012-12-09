@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.5.1 - 2012-12-07
+/*! Kogame.js - v0.6.0 - 2012-12-09
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -385,6 +385,29 @@ var ko = (function (ko) {
 var ko = (function (ko) {
     ko.Sprite = function (image, args) {
         ko.Node.call(this, args);
+        if (image) {
+            this.setImage(image);
+        }
+        this.onDraw = function () {
+            if (!this.image) {
+                return;
+            }
+            ko.graphics.drawSprite(this);
+        };
+    };
+    ko.Sprite.prototype = Object.create(ko.Node.prototype);
+    ko.Sprite.prototype.update = function (delta) {
+        ko.Node.prototype.update.call(this, delta);
+        if (this.animation) {
+            this.animation.update(delta);
+            this.image = this.animation.getFrameImage();
+        }
+    };
+    ko.Sprite.prototype.setImage = function (image) {
+        if (!image) {
+            throw new Error("'image' can not be empty when setting image on " +
+                "sprite.");
+        }
         /*global Image*/
         if (image instanceof Image) {
             this.image = image;
@@ -399,11 +422,52 @@ var ko = (function (ko) {
                 height: self.image.height 
             };
         });
-        this.onDraw = function () {
-            ko.graphics.drawSprite(this);
-        };
     };
-    ko.Sprite.prototype = Object.create(ko.Node.prototype);
+    ko.Sprite.prototype.playAnimation = function (animation) {
+        this.animation = animation;
+        this.animation.init();
+    };
+    ko.Sprite.prototype.stopAnimation = function () {
+        this.animation = null;
+    };
+    return ko;
+})(ko || {});
+
+var ko = (function (ko) {
+    ko.Animation = function (images, fps) {
+        if (!images || images.length === 0) {
+            throw new Error("'images' can not be empty when creating " + 
+                "animation.");
+        }
+        this.frames = [];
+        this.frameIndex = 0;
+        for (var i = 0; i < images.length; i++) {
+            /*global Image*/
+            if (images[i] instanceof Image) {
+                this.frames.push(images[i]);
+            } else {
+                var frame = new Image();
+                frame.src = images[i];
+                this.frames.push(frame);
+            }
+        }
+        var self = this;
+        this.sequence = new ko.Sequence();
+        this.sequence.
+            wait(1 / (fps || 30)).
+            call(function () {
+                self.frameIndex = (self.frameIndex + 1) % self.frames.length;
+            });
+    };
+    ko.Animation.prototype.update = function (delta) {
+        this.sequence.update(delta);
+    };
+    ko.Animation.prototype.init = function () {
+        this.sequence.init();
+    };
+    ko.Animation.prototype.getFrameImage = function () {
+        return this.frames[this.frameIndex];
+    };
     return ko;
 })(ko || {});
 
@@ -507,9 +571,6 @@ var ko = (function (ko) {
         this.elapsed = 0;
     };
     ko.Action.prototype.update = function (delta) {
-        if (!this.target) {
-            throw new Error("Action has not been initialized with a target");
-        }
         if (!this.duration) {
             // When the duration is zero we just want to perform the action
             // with a value of one
@@ -708,6 +769,11 @@ var ko = (function (ko) {
         this.repeatIndex = 0;
     };
     ko.Sequence.prototype = Object.create(ko.Action.prototype);
+    ko.Sequence.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.actionIndex = 0;
+        this.repeatIndex = 0;
+    };
     ko.Sequence.prototype.update = function (delta) {
         if (this.actions.length === 0) {
             return;
@@ -716,7 +782,7 @@ var ko = (function (ko) {
             return;
         }
         var currentAction = this.actions[this.actionIndex];
-        if (!currentAction.target) {
+        if (!currentAction.target && this.target) {
             currentAction.init(this.target);
         }
         currentAction.update(delta);
@@ -727,7 +793,6 @@ var ko = (function (ko) {
                 return;
             }
             currentAction = this.actions[this.actionIndex];
-            currentAction.init(this.target);
             if (!currentAction.duration) {
                 currentAction.update(delta);
             }

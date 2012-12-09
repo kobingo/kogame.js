@@ -6,6 +6,11 @@ var ko = (function (ko) {
         this.repeatIndex = 0;
     };
     ko.Sequence.prototype = Object.create(ko.Action.prototype);
+    ko.Sequence.prototype.init = function (target) {
+        ko.Action.prototype.init.call(this, target);
+        this.actionIndex = 0;
+        this.repeatIndex = 0;
+    };
     ko.Sequence.prototype.update = function (delta) {
         if (this.actions.length === 0) {
             return;
@@ -14,7 +19,7 @@ var ko = (function (ko) {
             return;
         }
         var currentAction = this.actions[this.actionIndex];
-        if (!currentAction.target) {
+        if (!currentAction.target && this.target) {
             currentAction.init(this.target);
         }
         currentAction.update(delta);
@@ -25,7 +30,6 @@ var ko = (function (ko) {
                 return;
             }
             currentAction = this.actions[this.actionIndex];
-            currentAction.init(this.target);
             if (!currentAction.duration) {
                 currentAction.update(delta);
             }

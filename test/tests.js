@@ -252,6 +252,85 @@ asyncTest("sprite - size", 2, function() {
     });
 });
 
+test("sprite - play animation", function () {
+	var animation = new ko.Animation([
+		'img/gem.png', 
+		'img/gem.png', 
+		'img/gem.png'
+	]);
+	var sprite = new ko.Sprite();
+	sprite.playAnimation(animation);
+	sprite.update(1);
+	equal(sprite.animation.frameIndex, 1);
+});
+
+test("sprite - stop animation", function () {
+	var animation = new ko.Animation([
+		'img/gem.png', 
+		'img/gem.png', 
+		'img/gem.png'
+	]);
+	var sprite = new ko.Sprite();
+	sprite.playAnimation(animation);
+	ok(sprite.animation);
+	sprite.stopAnimation();
+	ok(!sprite.animation);
+});
+
+/* Animation */
+
+test("animation - create (with images)", function () {
+	var images = [];
+	for (var i = 0; i < 3; i++) {
+		var img = new Image();
+		img.src = 'img/gem.png';
+		images.push(img);
+	}
+	var animation = new ko.Animation(images);
+	equal(animation.frameIndex, 0);
+	equal(animation.frames.length, images.length);
+});
+
+test("animation - create (with urls)", function () {
+	var images = [];
+	for (var i = 0; i < 3; i++) {
+		images.push('img/gem.png');
+	}
+	var animation = new ko.Animation(images);
+	equal(animation.frameIndex, 0);
+	equal(animation.frames.length, images.length);
+});
+
+test("animation - update (with default fps)", function () {
+	var images = [];
+	for (var i = 0; i < 3; i++) {
+		images.push('img/gem.png');
+	}
+	var animation = new ko.Animation(images);
+	animation.update(0.034);
+	equal(animation.frameIndex, 1);
+	animation.update(0.034);
+	equal(animation.frameIndex, 2);
+	animation.update(0.034);
+	equal(animation.frameIndex, 0);
+});
+
+test("animation - update (with 20 fps)", function () {
+	var images = [];
+	for (var i = 0; i < 3; i++) {
+		images.push('img/gem.png');
+	}
+	var animation = new ko.Animation(images, 20);
+	animation.update(0.025);
+	equal(animation.frameIndex, 0);
+	animation.update(0.025);
+	equal(animation.frameIndex, 1);
+	animation.update(0.025);
+	equal(animation.frameIndex, 1);
+	animation.update(0.025);
+	equal(animation.frameIndex, 2);
+});
+
 /* Label */
 
 test("label - create", function () {
@@ -367,23 +446,18 @@ test("bounding sphere - is intersecting (should throw exception)", function () {
 
 /* Action */
 
+test("action - update", function () {
+	var action = new ko.Action(1);
+	action.update(0.5);
+	equal(action.elapsed, 0.5);
+});
+
 test("action - is complete", function () {
 	var action = new ko.Action(1);
-	action.init(new ko.Node());
 	action.update(0.5);
 	ok(!action.isComplete());
 	action.update(0.5);
 	ok(action.isComplete());
-});
-
-test("action - update (should throw exception)", function () {
-	throws(
-        function() {
-            var action = new ko.Action(1);
-			action.update(1);
-        },
-        /Action has not been initialized with a target/
-    );
 });
 
 /* MoveTo */

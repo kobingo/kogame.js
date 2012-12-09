@@ -9,6 +9,7 @@ module.exports = function(grunt) {
     'src/graphics.js', 
     'src/node.js', 
     'src/sprite.js',
+    'src/animation.js',
     'src/label.js', 
     'src/collision.js',
     'src/action.js', 
