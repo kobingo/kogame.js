@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.6.0 - 2012-12-09
+/*! Kogame.js - v0.6.0 - 2012-12-12
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -39,12 +39,13 @@ var ko = (function (ko) {
         ko.game.draw();
         requestAnimationFrame(tick);
     };
+    var canvas;
     var Game = function () {
         this.targetDelta = 1000 / 60;
     };
     Game.prototype.init = function (canvasId) {
         /*global document*/
-        var canvas = document.getElementById(canvasId);
+        canvas = document.getElementById(canvasId);
         if (!canvas) {
             throw new Error("Couldn't find canvas '" + canvasId + "'");
         }
@@ -68,6 +69,54 @@ var ko = (function (ko) {
     Game.prototype.draw = function () {
         ko.graphics.clear();
         ko.director.draw();
+    };
+    Game.prototype.toggleFullscreen = function () {
+        if (!canvas) {
+            return;
+        }
+        var requestFullScreen = 
+            canvas.requestFullScreen ||
+            canvas.webkitRequestFullScreen ||
+            canvas.mozRequestFullScreen ||
+            canvas.oRequestFullScreen ||
+            canvas.msRequestFullScreen;
+        var isFullScreen = 
+            document.isFullScreen ||
+            document.webkitIsFullScreen ||
+            document.mozIsFullScreen ||
+            document.oIsFullScreen ||
+            document.msIsFullScreen;
+        var cancelFullScreen = 
+            document.cancelFullScreen ||
+            document.webkitCancelFullScreen ||
+            document.mozCancelFullScreen ||
+            document.oCancelFullScreen ||
+            document.msCancelFullScreen;
+        if (!isFullScreen && requestFullScreen) {
+            requestFullScreen.call(canvas);
+        } else if (cancelFullScreen){
+            cancelFullScreen.call(document);
+        }
+    };
+    Game.prototype.autoCenterAndScaleToFit = function () {
+        window.addEventListener("resize", function () {
+            _autoCenterAndScaleToFit();
+        }); 
+        var _autoCenterAndScaleToFit = function () {
+            if (!canvas) {
+                return;
+            }
+            var ratio = Math.min(window.innerWidth / canvas.width, 
+                window.innerHeight / canvas.height);
+            canvas.style.width = canvas.width * ratio + "px";
+            canvas.style.height = canvas.height * ratio + "px";
+            canvas.style.position = "absolute";
+            canvas.style.left = (window.innerWidth - 
+                canvas.width * ratio) / 2 + "px";
+            canvas.style.top = (window.innerHeight - 
+                canvas.height * ratio) / 2 + "px";
+        };
+        _autoCenterAndScaleToFit();
     };
     ko.game = new Game();
     return ko;
