@@ -1,6 +1,6 @@
 var ko = (function (ko) {
-    ko.Scene = function (args) {
-        ko.Node.call(this, args);
+    ko.Scene = function () {
+        ko.Node.call(this);
         this.centerAnchor();
         this.color = 'rgb(0,0,0)';
         this.opacity = 0;

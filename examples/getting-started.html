@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Kogame.js</title>
+</head>
+<body>
+    <canvas id="game" width="768" height="432"></canvas>
+    <script type="text/javascript" src="js/kogame-0.6.0.js"></script>
+    <script type="text/javascript">
+        // Initialize game with the canvas id
+        ko.game.init('game');
+        // Get the center of the graphics (center of the canvas)
+        var center = ko.graphics.center;
+        // Create a label
+        var label = new ko.Label("Kogame.js", "48px Comic Sans MS");
+        label.centerAnchor();
+        label.position = { x: center.x, y: -100 };
+        // Set up the action sequence for the label
+        label.performSequence().
+            moveTo(center.x, center.y, 1, ko.actionEase.backInOut).
+            wait(1).
+            fadeTo(0, 0.5, ko.actionEase.sineInOut).
+            moveTo(center.x, -100, 0).
+            fadeTo(1, 0);
+        // Create scene and add label
+        var scene = new ko.Scene();
+        scene.addChild(label);
+        // Start the game loop
+        ko.game.run(scene);
+    </script>
+</body>
+</html>

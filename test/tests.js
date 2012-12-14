@@ -67,11 +67,10 @@ test("node - create", function () {
 
 test("node - update", function () {
 	var updated = false;
-	var node = new ko.Node({
-		onUpdate: function (delta) {
-			updated = true;
-		}
-	});
+	var node = new ko.Node();
+	node.onUpdate = function (delta) {
+		updated = true;
+	};
 	node.acceleration = { x: 1, y: 1 };
 	node.update(1);
 	deepEqual(node.velocity, { x: 1, y: 1 });
@@ -777,11 +776,10 @@ test("sequence - is complete", function () {
 
 test("director - update scene", function () {
 	var updated = false;
-	var scene = new ko.Scene({
-		onUpdate: function (delta) {
-			updated = true;
-		}
-	});
+	var scene = new ko.Scene();
+	scene.onUpdate = function (delta) {
+		updated = true;
+	};
 	ko.director.scene = scene;
 	ko.director.update(1);
 	ok(updated);
@@ -842,16 +840,14 @@ test("transition - create (should throw exception B)", function () {
 test("transition - update", function () {
 	var sceneAUpdated = false;
 	var sceneBUpdated = false;
-	var sceneA = new ko.Scene({ 
-		onUpdate: function (delta) {
-			sceneAUpdated = true;
-		}
-	});
-	var sceneB = new ko.Scene({ 
-		onUpdate: function (delta) {
-			sceneBUpdated = true;
-		}
-	});
+	var sceneA = new ko.Scene();
+	sceneA.onUpdate = function (delta) {
+		sceneAUpdated = true;
+	};
+	var sceneB = new ko.Scene();
+	sceneB.onUpdate = function (delta) {
+		sceneBUpdated = true;
+	};
 	var transition = new ko.Transition(sceneA, sceneB, 1);
 	ko.director.scene = transition;
 	transition.update(0.1);

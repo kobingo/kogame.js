@@ -4,7 +4,8 @@ var ko = (function (ko) {
     ko.Graphics2D.prototype.init = function (canvas) {
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
-        this.size = { width: canvas.width, height: canvas.height };
+        this.width = canvas.width;
+        this.height = canvas.height;
         this.center = { x: canvas.width / 2, y: canvas.height / 2};
     };
     ko.Graphics2D.prototype.clear = function (color, opacity) {
@@ -20,6 +21,7 @@ var ko = (function (ko) {
         this.context.translate(node.position.x, node.position.y);
         this.context.scale(node.scale, node.scale);
         this.context.rotate(node.rotation);
+        this.context.translate(-node.camera.x, -node.camera.y);
     };
     ko.Graphics2D.prototype.endTransform = function () {
         this.context.restore();

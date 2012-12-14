@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.6.0 - 2012-12-12
+/*! Kogame.js - v0.6.0 - 2012-12-14
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -227,7 +227,8 @@ var ko = (function (ko) {
     ko.Graphics2D.prototype.init = function (canvas) {
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
-        this.size = { width: canvas.width, height: canvas.height };
+        this.width = canvas.width;
+        this.height = canvas.height;
         this.center = { x: canvas.width / 2, y: canvas.height / 2};
     };
     ko.Graphics2D.prototype.clear = function (color, opacity) {
@@ -243,6 +244,7 @@ var ko = (function (ko) {
         this.context.translate(node.position.x, node.position.y);
         this.context.scale(node.scale, node.scale);
         this.context.rotate(node.rotation);
+        this.context.translate(-node.camera.x, -node.camera.y);
     };
     ko.Graphics2D.prototype.endTransform = function () {
         this.context.restore();
@@ -276,8 +278,7 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Node = function (args) {
-        args = args || {};
+    ko.Node = function () {
         this.position = { x: 0, y: 0 };
         this.velocity = { x: 0, y: 0 };
         this.acceleration = { x: 0, y: 0 };
@@ -287,13 +288,14 @@ var ko = (function (ko) {
         this.scale = 1;
         this.anchor = { x: 0, y: 0 };
         this.size = { width: 0, height: 0 };
+        this.camera = { x: 0, y: 0 };
         this.visible = true;
         this.active = true;
         this.children = [];
         this.actions = [];
-        this.onUpdate = args.onUpdate || function (delta) {};
-        this.onHandleInput = args.onHandleInput || function () {};
-        this.onDraw = args.onDraw || function () {};
+        this.onUpdate = function (delta) {};
+        this.onHandleInput = function () {};
+        this.onDraw = function () {};
     };
     ko.Node.prototype.update = function (delta) {
         if (!this.active) {
@@ -428,12 +430,15 @@ var ko = (function (ko) {
     ko.Node.prototype.centerAnchor = function () {
         this.anchor = { x: 0.5, y: 0.5 };
     };
+    ko.Node.prototype.setCamera = function (position) {
+        this.camera = { x: position.x, y: position.y };
+    };
     return ko;
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Sprite = function (image, args) {
-        ko.Node.call(this, args);
+    ko.Sprite = function (image) {
+        ko.Node.call(this);
         if (image) {
             this.setImage(image);
         }
@@ -972,8 +977,8 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.Scene = function (args) {
-        ko.Node.call(this, args);
+    ko.Scene = function () {
+        ko.Node.call(this);
         this.centerAnchor();
         this.color = 'rgb(0,0,0)';
         this.opacity = 0;

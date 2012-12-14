@@ -15,13 +15,28 @@
 		var sprite = new ko.Sprite('img/gem.png');
 		sprite.centerPosition();
 		sprite.centerAnchor();
-		sprite.scale = 0.5;
-		// Create sequence with moveto actions
-		sprite.performSequence().
-			moveTo(284, 216, 1, ko.actionEase.sineInOut).
-			moveTo(484, 216, 1, ko.actionEase.sineInOut);
-		// Create scene and add sprite
+		// Create scene
 		var scene = new ko.Scene();
+		// Set up handle input
+		scene.onHandleInput = function (delta) {
+			if (ko.keyboard.isKeyDown(ko.keyboard.LEFT)) {
+				// Move sprite 5 pixels left
+				sprite.position.x -= 5;
+			}
+			if (ko.keyboard.isKeyDown(ko.keyboard.RIGHT)) {
+				// Move sprite 5 pixels right
+				sprite.position.x += 5;
+			}
+			if (ko.keyboard.isKeyDown(ko.keyboard.UP)) {
+				// Move sprite 5 pixels up
+				sprite.position.y -= 5;
+			}
+			if (ko.keyboard.isKeyDown(ko.keyboard.DOWN)) {
+				// Move sprite 5 pixels down
+				sprite.position.y += 5;
+			}
+		};
+		// Add sprite to scene
 		scene.addChild(sprite);
 		// Start the game loop
 		ko.game.run(scene);

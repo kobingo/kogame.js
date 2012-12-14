@@ -1,6 +1,5 @@
 var ko = (function (ko) {
-    ko.Node = function (args) {
-        args = args || {};
+    ko.Node = function () {
         this.position = { x: 0, y: 0 };
         this.velocity = { x: 0, y: 0 };
         this.acceleration = { x: 0, y: 0 };
@@ -10,13 +9,14 @@ var ko = (function (ko) {
         this.scale = 1;
         this.anchor = { x: 0, y: 0 };
         this.size = { width: 0, height: 0 };
+        this.camera = { x: 0, y: 0 };
         this.visible = true;
         this.active = true;
         this.children = [];
         this.actions = [];
-        this.onUpdate = args.onUpdate || function (delta) {};
-        this.onHandleInput = args.onHandleInput || function () {};
-        this.onDraw = args.onDraw || function () {};
+        this.onUpdate = function (delta) {};
+        this.onHandleInput = function () {};
+        this.onDraw = function () {};
     };
     ko.Node.prototype.update = function (delta) {
         if (!this.active) {
@@ -150,6 +150,9 @@ var ko = (function (ko) {
     };
     ko.Node.prototype.centerAnchor = function () {
         this.anchor = { x: 0.5, y: 0.5 };
+    };
+    ko.Node.prototype.setCamera = function (position) {
+        this.camera = { x: position.x, y: position.y };
     };
     return ko;
 })(ko || {});
