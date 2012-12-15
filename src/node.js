@@ -96,63 +96,41 @@ var ko = (function (ko) {
     };
     ko.Node.prototype.moveTo = function (x, y, duration, actionEase) {
         this.performAction(new ko.MoveTo(x, y, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.moveBy = function (x, y, duration, actionEase) {
         this.performAction(new ko.MoveBy(x, y, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.scaleTo = function (scaleTo, duration, actionEase) {
         this.performAction(new ko.ScaleTo(scaleTo, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.scaleBy = function (scaleBy, duration, actionEase) {
         this.performAction(new ko.ScaleBy(scaleBy, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.rotateTo = function (rotateTo, duration, actionEase) {
         this.performAction(new ko.RotateTo(rotateTo, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.rotateBy = function (rotateBy, duration, actionEase) {
         this.performAction(new ko.RotateBy(rotateBy, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.fadeTo = function (fadeTo, duration, actionEase) {
         this.performAction(new ko.FadeTo(fadeTo, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.fadeBy = function (fadeBy, duration, actionEase) {
         this.performAction(new ko.FadeBy(fadeBy, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.performSequence = function (repeat) {
         var sequence = new ko.Sequence([], repeat);
         this.performAction(sequence);
         return sequence;
     };
-    ko.Node.prototype.isColliding = function (node, separate, collisionType) {
-        collisionType = collisionType || ko.collisionType.BOX;
-        switch (collisionType) {
-            case ko.collisionType.BOX:
-                return ko.isBoundingBoxIntersecting(this, node, separate);
-            case ko.collisionType.SPHERE:
-                return ko.isBoundingSphereIntersecting(this, node, separate);
-        }
-        return false;
-    };
     ko.Node.prototype.setPosition = function (position) {
         this.position = { x: position.x, y: position.y };
     };
-    ko.Node.prototype.centerPosition = function () {
-        var center = ko.graphics.center;
-        this.position = { x: center.x, y: center.y };
+    ko.Node.prototype.setCamera = function (position) {
+        this.camera = { x: position.x, y: position.y };
     };
     ko.Node.prototype.centerAnchor = function () {
         this.anchor = { x: 0.5, y: 0.5 };
-    };
-    ko.Node.prototype.setCamera = function (position) {
-        this.camera = { x: position.x, y: position.y };
     };
     return ko;
 })(ko || {});

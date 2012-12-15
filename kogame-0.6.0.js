@@ -1,4 +1,4 @@
-/*! Kogame.js - v0.6.0 - 2012-12-14
+/*! Kogame.js - v0.6.0 - 2012-12-15
 * https://github.com/kobingo/kogame.js
 * Copyright (c) 2012 Jens Andersson; Licensed MIT */
 
@@ -375,63 +375,41 @@ var ko = (function (ko) {
     };
     ko.Node.prototype.moveTo = function (x, y, duration, actionEase) {
         this.performAction(new ko.MoveTo(x, y, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.moveBy = function (x, y, duration, actionEase) {
         this.performAction(new ko.MoveBy(x, y, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.scaleTo = function (scaleTo, duration, actionEase) {
         this.performAction(new ko.ScaleTo(scaleTo, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.scaleBy = function (scaleBy, duration, actionEase) {
         this.performAction(new ko.ScaleBy(scaleBy, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.rotateTo = function (rotateTo, duration, actionEase) {
         this.performAction(new ko.RotateTo(rotateTo, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.rotateBy = function (rotateBy, duration, actionEase) {
         this.performAction(new ko.RotateBy(rotateBy, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.fadeTo = function (fadeTo, duration, actionEase) {
         this.performAction(new ko.FadeTo(fadeTo, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.fadeBy = function (fadeBy, duration, actionEase) {
         this.performAction(new ko.FadeBy(fadeBy, duration, actionEase));
-        return this;
     };
     ko.Node.prototype.performSequence = function (repeat) {
         var sequence = new ko.Sequence([], repeat);
         this.performAction(sequence);
         return sequence;
     };
-    ko.Node.prototype.isColliding = function (node, separate, collisionType) {
-        collisionType = collisionType || ko.collisionType.BOX;
-        switch (collisionType) {
-            case ko.collisionType.BOX:
-                return ko.isBoundingBoxIntersecting(this, node, separate);
-            case ko.collisionType.SPHERE:
-                return ko.isBoundingSphereIntersecting(this, node, separate);
-        }
-        return false;
-    };
     ko.Node.prototype.setPosition = function (position) {
         this.position = { x: position.x, y: position.y };
     };
-    ko.Node.prototype.centerPosition = function () {
-        var center = ko.graphics.center;
-        this.position = { x: center.x, y: center.y };
+    ko.Node.prototype.setCamera = function (position) {
+        this.camera = { x: position.x, y: position.y };
     };
     ko.Node.prototype.centerAnchor = function () {
         this.anchor = { x: 0.5, y: 0.5 };
-    };
-    ko.Node.prototype.setCamera = function (position) {
-        this.camera = { x: position.x, y: position.y };
     };
     return ko;
 })(ko || {});
@@ -547,67 +525,88 @@ var ko = (function (ko) {
 })(ko || {});
 
 var ko = (function (ko) {
-    ko.isBoundingBoxIntersecting = function(node1, node2, separate) {
-        var a = {
-            x: node1.position.x,
-            y: node1.position.y,
-            w: node1.size.width,
-            h: node1.size.height
-        };
-        a.l = a.x - a.w * node1.anchor.x;
-        a.r = a.x + a.w * (1 - node1.anchor.x);
-        a.t = a.y - a.h * node1.anchor.y;
-        a.b = a.y + a.h * (1 - node1.anchor.y);
-        var b = {
-            x: node2.position.x,
-            y: node2.position.y,
-            w: node2.size.width,
-            h: node2.size.height
-        };
-        b.l = b.x - b.w * node2.anchor.x;
-        b.r = b.x + b.w * (1 - node2.anchor.x);
-        b.t = b.y - b.h * node2.anchor.y;
-        b.b = b.y + b.h * (1 - node2.anchor.y);
-        if (a.r <= b.l || a.l >= b.r || a.b <= b.t || a.t >= b.b) {
+    ko.BoundingBox = {
+        isIntersecting: function(node1, node2, separate) {
+            if (node1.parent !== node2.parent) {
+                throw new Error("Both nodes must have the same parent when " + 
+                    "testing bounding box intersection.");
+            }
+            var a = {
+                x: node1.position.x,
+                y: node1.position.y,
+                w: node1.size.width,
+                h: node1.size.height
+            };
+            a.l = a.x - a.w * node1.anchor.x;
+            a.r = a.x + a.w * (1 - node1.anchor.x);
+            a.t = a.y - a.h * node1.anchor.y;
+            a.b = a.y + a.h * (1 - node1.anchor.y);
+            var b = {
+                x: node2.position.x,
+                y: node2.position.y,
+                w: node2.size.width,
+                h: node2.size.height
+            };
+            b.l = b.x - b.w * node2.anchor.x;
+            b.r = b.x + b.w * (1 - node2.anchor.x);
+            b.t = b.y - b.h * node2.anchor.y;
+            b.b = b.y + b.h * (1 - node2.anchor.y);
+            if (a.r <= b.l || a.l >= b.r || a.b <= b.t || a.t >= b.b) {
+                return ko.BoundingBox.intersection.NONE;
+            }
+            var intersection = ko.BoundingBox.intersection.NONE;
+            var position = { x: node1.position.x, y: node1.position.y };
+            var diffx = Math.min(Math.abs(a.r - b.l), Math.abs(b.r - a.l));
+            var diffy = Math.min(Math.abs(a.b - b.t), Math.abs(b.b - a.t));
+            if (diffx < diffy) {
+                if (a.l < b.l) {
+                    position.x = b.l - a.w * (1 - node1.anchor.x);
+                    intersection = ko.BoundingBox.intersection.RIGHT;
+                } else {
+                    position.x = b.r + a.w * node1.anchor.x;
+                    intersection = ko.BoundingBox.intersection.LEFT;
+                }
+            } else {
+                if (a.t < b.t) {
+                    position.y = b.t - a.h * (1 - node1.anchor.y);
+                    intersection = ko.BoundingBox.intersection.BOTTOM;
+                } else {
+                    position.y = b.b + a.h * node1.anchor.y;
+                    intersection = ko.BoundingBox.intersection.TOP;
+                }
+            }
+            if (separate) {
+                node1.setPosition(position);
+            }
+            return intersection;
+        },
+        intersection: {
+            NONE: 0,
+            LEFT: 1,
+            RIGHT: 2,
+            TOP: 3,
+            BOTTOM: 4
+        }
+    };
+    ko.BoundingSphere = {
+        isIntersecting: function (node1, node2) {
+            if (node1.parent !== node2.parent) {
+                throw new Error("Both nodes must have the same parent when " + 
+                    "testing bounding sphere intersection.");
+            }
+            if (!node1.radius || !node2.radius) {
+                throw new Error("Both nodes must have a radius when testing " + 
+                    "for bounding sphere intersection.");
+            }
+            var x = node1.position.x - node2.position.x;
+            var y = node1.position.y - node2.position.y;
+            var distance = Math.sqrt(x * x + y * y);
+            if(distance <= (node1.radius + node2.radius))
+            {
+                return true;
+            }
             return false;
         }
-        if (!separate) {
-            return true;
-        }
-        var diffx = Math.min(Math.abs(a.r - b.l), Math.abs(b.r - a.l));
-        var diffy = Math.min(Math.abs(a.b - b.t), Math.abs(b.b - a.t));
-        if (diffx < diffy) {
-            if (a.l < b.l) {
-                node1.position.x = b.l - a.w * (1 - node1.anchor.x);
-            } else {
-                node1.position.x = b.r + a.w * node1.anchor.x;
-            }
-        } else {
-            if (a.t < b.t) {
-                node1.position.y = b.t - a.h * (1 - node1.anchor.y);
-            } else {
-                node1.position.y = b.b + a.h * node1.anchor.y;
-            }
-        }
-        return true;
-    };
-    ko.isBoundingSphereIntersecting = function (node1, node2, separate) {
-        if (!node1.radius || !node2.radius) {
-            throw new Error("Both nodes must have a radius when testing for " +
-                "bounding sphere intersection.");
-        }
-        var x = node1.position.x - node2.position.x;
-        var y = node1.position.y - node2.position.y;
-        var distance = Math.sqrt(x * x + y * y);
-        if(distance <= (node1.radius + node2.radius))
-        {
-            return true;
-        }
-        return false;
-    };
-    ko.collisionType = {
-        BOX: 0,
-        SPHERE: 1
     };
     return ko;
 })(ko || {});
