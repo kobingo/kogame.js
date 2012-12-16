@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Kogame.js</title>
+    <link rel="stylesheet" type="text/css" href="css/example.css">
+</head>
+<body>
+	<div id="content">
+		<div id="title">Example how to add a menu</div>
+		<canvas id="game" width="768" height="432"></canvas>
+		<div id="description">Select item with the arrow keys, press enter to 
+			choose.</div>
+	</div>
+    <script type="text/javascript" src="js/kogame-0.6.0.js"></script>
+    <script type="text/javascript">
+    	// Initialize game with the canvas id
+		ko.game.init('game');
+		// Create menu with specified font and items
+		var menu = new ko.Menu(32, "Futura", ["First", "Second", "Third", 
+			"Forth", "Fifth"]);
+		menu.itemColor = "rgb(50, 50, 50)";
+		menu.selectedItemColor = "rgb(255, 255, 255)";
+		menu.onSelectedItemChosen = function () {
+			// Scale selected label when choosen
+			menu.labels[menu.selectedItemIndex].performSequence(1).
+				scaleTo(0.9, 0.15, ko.actionEase.sineInOut).
+				scaleTo(1.1, 0.15, ko.actionEase.sineInOut);
+		}
+		// Create scene and add menu
+		var scene = new ko.Scene();
+		scene.addChild(menu);
+		// Start the game loop
+		ko.game.run(scene);
+    </script>
+</body>
+</html>
