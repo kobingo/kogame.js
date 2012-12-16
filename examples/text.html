@@ -18,7 +18,8 @@
 		// Create label with specified text and font
 		var label = new ko.Label("Kogame.js", "56px Futura");
 		label.color = "rgb(50, 50, 50)";
-		label.centerAnchor();
+		label.align = 'center';
+		label.baseline = 'middle'
 		label.setPosition(ko.graphics.center);
 		// Create scene and add label
 		var scene = new ko.Scene();

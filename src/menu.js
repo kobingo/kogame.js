@@ -4,8 +4,8 @@ var ko = (function (ko) {
             throw new Error("Can't create menu without any items.");
         }
         ko.Node.call(this);
-        this.itemColor = 'rgb(255,255,255)';
-        this.selectedItemColor = 'rgb(255,215,0)';
+        this.itemColor = 'rgb(50,50,50)';
+        this.selectedItemColor = 'rgb(255,255,255)';
         this.selectedItemIndex = 0;
         this.spacing = 10;
         this.fontSize = fontSize;
@@ -37,6 +37,8 @@ var ko = (function (ko) {
         this.labels = [];
         for (var i = 0; i < this.items.length; i++) {
             var label = new ko.Label(this.items[i], this.font);
+            label.align = 'center';
+            label.baseline = 'middle';
             this.labels.push(label);
             this.addChild(label);
         }
@@ -51,7 +53,6 @@ var ko = (function (ko) {
         };
         for (var i = 0; i < this.items.length; i++) {
             this.labels[i].position.y = calculatePosition(i);
-            this.labels[i].centerAnchor();
         }
         this.setPosition(ko.graphics.center);
     };
@@ -68,14 +69,10 @@ var ko = (function (ko) {
         }
     };
     ko.Menu.prototype.selectedItemChanged = function () {
-        for (var i = 0; i < this.items.length; i++) {
-            if (i === this.selectedItemIndex) {
-                continue;
-            }
-            this.labels[i].scaleTo(1, 0.1, ko.actionEase.sineInOut);
+        if (!this.onSelectedItemChanged) {
+            return;
         }
-        this.labels[this.selectedItemIndex].scaleTo(1.1, 0.1, 
-            ko.actionEase.sineInOut);
+        this.onSelectedItemChanged();
     };
     ko.Menu.prototype.chooseSelectedItem = function () {
         if (!this.onSelectedItemChosen) {

@@ -19,13 +19,11 @@
 		// Create menu with specified font and items
 		var menu = new ko.Menu(32, "Futura", ["First", "Second", "Third", 
 			"Forth", "Fifth"]);
-		menu.itemColor = "rgb(50, 50, 50)";
-		menu.selectedItemColor = "rgb(255, 255, 255)";
 		menu.onSelectedItemChosen = function () {
 			// Scale selected label when choosen
 			menu.labels[menu.selectedItemIndex].performSequence(1).
-				scaleTo(0.9, 0.15, ko.actionEase.sineInOut).
-				scaleTo(1.1, 0.15, ko.actionEase.sineInOut);
+				scaleTo(0.8, 0.15, ko.actionEase.sineInOut).
+				scaleTo(1.0, 0.15, ko.actionEase.sineInOut);
 		}
 		// Create scene and add menu
 		var scene = new ko.Scene();

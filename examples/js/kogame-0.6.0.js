@@ -264,14 +264,10 @@ var ko = (function (ko) {
     ko.Graphics2D.prototype.drawLabel = function (label) {
         this.context.fillStyle = label.color;
         this.context.font = label.font;
+        this.context.textAlign = label.align;
+        this.context.textBaseline = label.baseline;
         this.context.globalAlpha = label.opacity;
-        this.context.fillText(label.text, label.anchor.x * 
-            -label.size.width, label.anchor.y * -label.size.height);
-    };
-    ko.Graphics2D.prototype.getLabelSize = function (label) {
-        this.context.font = label.font;
-        var textMetrics = this.context.measureText(label.text);
-        return { width: textMetrics.width, height: 0 };
+        this.context.fillText(label.text, 0, 0);
     };
     ko.graphics = new ko.Graphics2D();
     return ko;
@@ -506,21 +502,15 @@ var ko = (function (ko) {
 var ko = (function (ko) {
     ko.Label = function (text, font, args) {
         ko.Node.call(this, args);
-        this.setText(text);
-        this.setFont(font);
+        this.text = text;
+        this.font = font;
+        this.baseline = 'top';
+        this.align = 'left';
         this.onDraw = function () {
             ko.graphics.drawLabel(this);
         };
     };
     ko.Label.prototype = Object.create(ko.Node.prototype);
-    ko.Label.prototype.setText = function (text) {
-        this.text = text;
-        this.size = ko.graphics.getLabelSize(this);
-    };
-    ko.Label.prototype.setFont = function (font) {
-        this.font = font;
-        this.size = ko.graphics.getLabelSize(this);
-    };
     return ko;
 })(ko || {});
 
@@ -1096,8 +1086,8 @@ var ko = (function (ko) {
             throw new Error("Can't create menu without any items.");
         }
         ko.Node.call(this);
-        this.itemColor = 'rgb(255,255,255)';
-        this.selectedItemColor = 'rgb(255,215,0)';
+        this.itemColor = 'rgb(50,50,50)';
+        this.selectedItemColor = 'rgb(255,255,255)';
         this.selectedItemIndex = 0;
         this.spacing = 10;
         this.fontSize = fontSize;
@@ -1129,6 +1119,8 @@ var ko = (function (ko) {
         this.labels = [];
         for (var i = 0; i < this.items.length; i++) {
             var label = new ko.Label(this.items[i], this.font);
+            label.align = 'center';
+            label.baseline = 'middle';
             this.labels.push(label);
             this.addChild(label);
         }
@@ -1143,7 +1135,6 @@ var ko = (function (ko) {
         };
         for (var i = 0; i < this.items.length; i++) {
             this.labels[i].position.y = calculatePosition(i);
-            this.labels[i].centerAnchor();
         }
         this.setPosition(ko.graphics.center);
     };
@@ -1160,14 +1151,10 @@ var ko = (function (ko) {
         }
     };
     ko.Menu.prototype.selectedItemChanged = function () {
-        for (var i = 0; i < this.items.length; i++) {
-            if (i === this.selectedItemIndex) {
-                continue;
-            }
-            this.labels[i].scaleTo(1, 0.1, ko.actionEase.sineInOut);
+        if (!this.onSelectedItemChanged) {
+            return;
         }
-        this.labels[this.selectedItemIndex].scaleTo(1.1, 0.1, 
-            ko.actionEase.sineInOut);
+        this.onSelectedItemChanged();
     };
     ko.Menu.prototype.chooseSelectedItem = function () {
         if (!this.onSelectedItemChosen) {

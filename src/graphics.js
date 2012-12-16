@@ -41,14 +41,10 @@ var ko = (function (ko) {
     ko.Graphics2D.prototype.drawLabel = function (label) {
         this.context.fillStyle = label.color;
         this.context.font = label.font;
+        this.context.textAlign = label.align;
+        this.context.textBaseline = label.baseline;
         this.context.globalAlpha = label.opacity;
-        this.context.fillText(label.text, label.anchor.x * 
-            -label.size.width, label.anchor.y * -label.size.height);
-    };
-    ko.Graphics2D.prototype.getLabelSize = function (label) {
-        this.context.font = label.font;
-        var textMetrics = this.context.measureText(label.text);
-        return { width: textMetrics.width, height: 0 };
+        this.context.fillText(label.text, 0, 0);
     };
     ko.graphics = new ko.Graphics2D();
     return ko;

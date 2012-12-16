@@ -35,8 +35,9 @@
         // Create title label and add it to title scene
         var titleLabel = new ko.Label("Simple game", "56px Futura");
         titleLabel.color = "rgb(50, 50, 50)";
-        titleLabel.position = { x: center.x, y: center.y + 10 };
-        titleLabel.centerAnchor();
+        titleLabel.setPosition(center);
+        titleLabel.align = 'center';
+        titleLabel.baseline = 'middle';
         titleScene.addChild(titleLabel);
 
         // Create game scene

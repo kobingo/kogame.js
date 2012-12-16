@@ -322,7 +322,8 @@ test("animation - update (with 20 fps)", function () {
 test("label - create", function () {
 	assertGameIsInitialized();
 	var label = new ko.Label("Kogame.js", "32px arial");
-	ok(label.size.width > 0);
+	equal(label.baseline, "top");
+	equal(label.align, "left");
 	ok(label instanceof ko.Node);
 });
 
