@@ -33,7 +33,7 @@
         };
 
         // Create title label and add it to title scene
-        var titleLabel = new ko.Label("Simple game", "56px Tahoma");
+        var titleLabel = new ko.Label("Simple game", "56px Futura");
         titleLabel.color = "rgb(50, 50, 50)";
         titleLabel.position = { x: center.x, y: center.y + 10 };
         titleLabel.centerAnchor();
@@ -104,12 +104,19 @@
                 ball.position.y = ko.graphics.height;
                 ball.velocity.y *= -1;
             }
-            if (ko.boundingBox.isIntersecting(ball, paddle1, true) || 
-                ko.boundingBox.isIntersecting(ball, paddle2, true))
+            var intersection = ko.boundingBox.isIntersecting(ball, paddle1, 
+                true) || ko.boundingBox.isIntersecting(ball, paddle2, true);
+            if (intersection === ko.boundingBox.intersection.LEFT ||
+                intersection === ko.boundingBox.intersection.RIGHT)
             {
                 // Bounce ball when ball is colliding with one of the paddles
                 ball.velocity.x *= -1.1;
                 ball.velocity.y *= 1.1;
+            }
+            if (intersection === ko.boundingBox.intersection.TOP ||
+                intersection === ko.boundingBox.intersection.BOTTOM)
+            {
+                ball.velocity.y *= -1;
             }
         };
         ball.onDraw = function () {
