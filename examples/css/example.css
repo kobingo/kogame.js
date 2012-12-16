@@ -1,0 +1,40 @@
+body
+{
+	background-color: #333;
+}
+
+#content
+{
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 768px;
+	height: 532px;
+	margin-left: -384px;
+	margin-top: -266px;
+}
+
+#title
+{
+	width: 768px;
+	height: 50px;
+	font-family: Futura;
+	font-size: 20px;
+	color: #999;
+	text-align: center;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+#description
+{
+	width: 768px;
+	height: 50px;
+	font-family: Futura;
+	font-size: 16px;
+	font-style: italic;
+	color: #999;
+	text-align: center;
+	display: table-cell;
+	vertical-align: middle;
+}

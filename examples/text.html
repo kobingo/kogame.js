@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Kogame.js</title>
+    <link rel="stylesheet" type="text/css" href="css/example.css">
+</head>
+<body>
+	<div id="content">
+		<div id="title">Example how to draw text</div>
+		<canvas id="game" width="768" height="432"></canvas>
+		<div id="description"></div>
+	</div>
+    <script type="text/javascript" src="js/kogame-0.6.0.js"></script>
+    <script type="text/javascript">
+    	// Initialize game with the canvas id
+		ko.game.init('game');
+		// Create label with specified text and font
+		var label = new ko.Label("Kogame.js", "56px Futura");
+		label.color = "rgb(50, 50, 50)";
+		label.centerAnchor();
+		label.setPosition(ko.graphics.center);
+		// Create scene and add label
+		var scene = new ko.Scene();
+		scene.addChild(label);
+		// Start the game loop
+		ko.game.run(scene);
+    </script>
+</body>
+</html>

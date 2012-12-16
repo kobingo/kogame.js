@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Kogame.js</title>
+    <link rel="stylesheet" type="text/css" href="css/example.css">
+</head>
+<body>
+	<div id="content">
+		<div id="title">Example how to handle mouse input</div>
+		<canvas id="game" width="768" height="432"></canvas>
+		<div id="description">Control sprite with the mouse, press mouse button 
+			to rotate the sprite.</div>
+	</div>
+    <script type="text/javascript" src="js/kogame-0.6.0.js"></script>
+    <script type="text/javascript">
+    	// Initialize game with the canvas id
+		ko.game.init('game');
+		// Create sprite with specified url and center on screen
+		var sprite = new ko.Sprite('img/gem.png');
+		sprite.centerAnchor();
+		sprite.setPosition(ko.graphics.center);
+		// Create scene and add sprite
+		var scene = new ko.Scene();
+		scene.addChild(sprite);
+		// Set up handle input for scene
+		scene.onHandleInput = function () {
+			// Set the sprite position to mouse local coordinates
+			sprite.position = { x: ko.mouse.local.x, y: ko.mouse.local.y };
+			if (ko.mouse.wasButtonPressed()) {
+				// Scale sprite when mouse button was pressed
+				sprite.rotateBy(Math.PI, 0.3, ko.actionEase.sineInOut);
+			}
+		};
+		// Start the game loop
+		ko.game.run(scene);
+    </script>
+</body>
+</html>
