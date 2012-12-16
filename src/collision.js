@@ -1,5 +1,5 @@
 var ko = (function (ko) {
-    ko.BoundingBox = {
+    ko.boundingBox = {
         isIntersecting: function(node1, node2, separate) {
             if (node1.parent !== node2.parent) {
                 throw new Error("Both nodes must have the same parent when " + 
@@ -26,27 +26,27 @@ var ko = (function (ko) {
             b.t = b.y - b.h * node2.anchor.y;
             b.b = b.y + b.h * (1 - node2.anchor.y);
             if (a.r <= b.l || a.l >= b.r || a.b <= b.t || a.t >= b.b) {
-                return ko.BoundingBox.intersection.NONE;
+                return ko.boundingBox.intersection.NONE;
             }
-            var intersection = ko.BoundingBox.intersection.NONE;
+            var intersection = ko.boundingBox.intersection.NONE;
             var position = { x: node1.position.x, y: node1.position.y };
             var diffx = Math.min(Math.abs(a.r - b.l), Math.abs(b.r - a.l));
             var diffy = Math.min(Math.abs(a.b - b.t), Math.abs(b.b - a.t));
             if (diffx < diffy) {
                 if (a.l < b.l) {
                     position.x = b.l - a.w * (1 - node1.anchor.x);
-                    intersection = ko.BoundingBox.intersection.RIGHT;
+                    intersection = ko.boundingBox.intersection.RIGHT;
                 } else {
                     position.x = b.r + a.w * node1.anchor.x;
-                    intersection = ko.BoundingBox.intersection.LEFT;
+                    intersection = ko.boundingBox.intersection.LEFT;
                 }
             } else {
                 if (a.t < b.t) {
                     position.y = b.t - a.h * (1 - node1.anchor.y);
-                    intersection = ko.BoundingBox.intersection.BOTTOM;
+                    intersection = ko.boundingBox.intersection.BOTTOM;
                 } else {
                     position.y = b.b + a.h * node1.anchor.y;
-                    intersection = ko.BoundingBox.intersection.TOP;
+                    intersection = ko.boundingBox.intersection.TOP;
                 }
             }
             if (separate) {
@@ -62,7 +62,7 @@ var ko = (function (ko) {
             BOTTOM: 4
         }
     };
-    ko.BoundingSphere = {
+    ko.boundingSphere = {
         isIntersecting: function (node1, node2) {
             if (node1.parent !== node2.parent) {
                 throw new Error("Both nodes must have the same parent when " + 
