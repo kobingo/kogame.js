@@ -1,10 +1,13 @@
-body
-{
+@font-face {
+  font-family: 'The Rifleman';
+  src: url('therifle.ttf');
+}
+
+body {
 	background-color: #333;
 }
 
-#content
-{
+#content {
 	position: absolute;
 	left: 50%;
 	top: 50%;
@@ -14,8 +17,7 @@ body
 	margin-top: -266px;
 }
 
-#title
-{
+#title {
 	width: 768px;
 	height: 50px;
 	font-family: Futura;
@@ -26,8 +28,7 @@ body
 	vertical-align: middle;
 }
 
-#description
-{
+#description {
 	width: 768px;
 	height: 50px;
 	font-family: Futura;

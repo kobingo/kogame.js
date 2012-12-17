@@ -16,12 +16,12 @@
     	// Initialize game with the canvas id
 		ko.game.init('game');
 		// Create sprite with specified url and center on screen
-		var sprite = new ko.Sprite('img/gem.png');
+		var sprite = new ko.Sprite('img/whakman1.png');
 		sprite.centerAnchor();
-		sprite.position = { x: -150, y: ko.graphics.center.y };
+		sprite.position = { x: ko.graphics.center.x, y: -150 };
 		// Create an action that takes 4 seconds to complete
 		var action = new ko.MoveTo(ko.graphics.center.x, ko.graphics.center.y, 
-			4, ko.actionEase.sineInOut);
+			3, ko.actionEase.sineInOut);
 		// Set sprite to perform action
 		sprite.performAction(action);
 		// Create scene and add sprite
