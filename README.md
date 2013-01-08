@@ -2,15 +2,6 @@ Kogame.js
 =========
 Framework for creating 2D games with HTML5 and JavaScript. Currently in beta.
 
-Features
---------
-* Scenes and transitions between scenes
-* Actions
-* Input with keyboard an mouse
-* Sprites
-* Menus
-* Collision detection with bounding boxes
-
 Getting started
 ---------------
 Download the latest version of [Kogame.js](https://raw.github.com/kobingo/kogame.js/master/kogame-0.6.0.js) 
